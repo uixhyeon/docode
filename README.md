@@ -3,4 +3,4 @@
 둘때커밋 002.07.28 cmmit 으로 해야지.. 
 git add .
 git commit -m"name^^"
-got push
+git push

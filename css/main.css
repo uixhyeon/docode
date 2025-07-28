@@ -140,4 +140,16 @@ figure .inner a:hover{
     color: #333;
 }
 /* 뉴스 */
+section{
+    padding: 200px;
+}
+.section_wrap ul{
+display: flex;
+}
+.section_wrap il li {
+width: ;
+}
+.pic img {
+    width: 100%;
+}
 /* 하단 */

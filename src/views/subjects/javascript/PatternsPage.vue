@@ -11,29 +11,37 @@
       <section class="content-section">
         <h2>주요 내용</h2>
         <div class="content-list">
-          <div class="content-item">
-            <h3>Singleton</h3>
-            <p>싱글톤 패턴</p>
-          </div>
-          <div class="content-item">
-            <h3>Observer</h3>
-            <p>옵저버 패턴</p>
-          </div>
-          <div class="content-item">
-            <h3>Module</h3>
-            <p>모듈 패턴</p>
-          </div>
-          <div class="content-item">
-            <h3>Factory</h3>
-            <p>팩토리 패턴</p>
-          </div>
-          <div class="content-item">
-            <h3>Prototype</h3>
-            <p>프로토타입 패턴</p>
-          </div>
-          <div class="content-item">
-            <h3>Mixin</h3>
-            <p>믹신 패턴</p>
+          <div v-for="topic in topics" :key="topic.id" class="topic-wrapper">
+            <div class="content-item">
+              <div class="item-header">
+                <div class="item-title-area">
+                  <h3>{{ topic.title }}</h3>
+                  <p>{{ topic.description }}</p>
+                </div>
+                <button class="write-btn" @click="goToWrite(topic.id, topic.title)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  <span>글쓰기</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 작성된 글 목록 -->
+            <div v-if="getArticles(topic.id).length > 0" class="articles-list">
+              <div
+                v-for="article in getArticles(topic.id)"
+                :key="article.id"
+                class="article-card"
+                @click="viewArticle(article.id)"
+              >
+                <div class="article-header">
+                  <h4>{{ article.title }}</h4>
+                  <span class="article-date">{{ formatDate(article.createdAt) }}</span>
+                </div>
+                <p class="article-preview">{{ article.preview }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -42,7 +50,11 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import TabNavigation from '../../../components/TabNavigation.vue'
+
+const router = useRouter()
 
 const tabs = [
   { name: 'ES6+', path: '/subjects/javascript/es6', icon: '🆕' },
@@ -50,6 +62,87 @@ const tabs = [
   { name: 'Patterns', path: '/subjects/javascript/patterns', icon: '🔨' },
   { name: 'Utils', path: '/subjects/javascript/utils', icon: '🛠️' },
 ]
+
+const topics = [
+  {
+    id: 'singleton',
+    title: 'Singleton',
+    description: '싱글톤 패턴'
+  },
+  {
+    id: 'observer',
+    title: 'Observer',
+    description: '옵저버 패턴'
+  },
+  {
+    id: 'module',
+    title: 'Module',
+    description: '모듈 패턴'
+  },
+  {
+    id: 'factory',
+    title: 'Factory',
+    description: '팩토리 패턴'
+  },
+  {
+    id: 'prototype',
+    title: 'Prototype',
+    description: '프로토타입 패턴'
+  },
+  {
+    id: 'mixin',
+    title: 'Mixin',
+    description: '믹신 패턴'
+  }
+]
+
+const articles = ref([])
+
+// localStorage에서 글 목록 불러오기
+onMounted(() => {
+  const savedArticles = localStorage.getItem('articles_javascript_patterns')
+  if (savedArticles) {
+    articles.value = JSON.parse(savedArticles)
+  }
+})
+
+// 특정 주제의 글 목록 가져오기
+const getArticles = (topicId) => {
+  return articles.value.filter(article => article.topicId === topicId)
+}
+
+// 글쓰기 페이지로 이동
+const goToWrite = (topicId, topicTitle) => {
+  router.push({
+    path: '/write',
+    query: {
+      category: 'subjects',
+      subcategory: 'javascript',
+      page: 'patterns',
+      topic: topicId,
+      topicTitle: topicTitle
+    }
+  })
+}
+
+// 글 상세 보기
+const viewArticle = (articleId) => {
+  router.push({
+    path: '/article',
+    query: {
+      id: articleId
+    }
+  })
+}
+
+// 날짜 포맷
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}.${month}.${day}`
+}
 </script>
 
 <style lang="scss" scoped>
@@ -98,7 +191,13 @@ const tabs = [
 .content-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+}
+
+.topic-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .content-item {
@@ -112,6 +211,17 @@ const tabs = [
     border-color: var(--color-accent);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.item-title-area {
+  flex: 1;
 
   h3 {
     font-size: 1.25rem;
@@ -126,5 +236,91 @@ const tabs = [
     margin: 0;
     line-height: 1.6;
   }
+}
+
+.write-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--color-link-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 96, 223, 0.3);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 480px) {
+    span {
+      display: none;
+    }
+  }
+}
+
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-left: 1rem;
+}
+
+.article-card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--color-accent);
+    background: var(--color-bg-primary);
+    transform: translateX(4px);
+  }
+}
+
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+}
+
+.article-date {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.article-preview {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

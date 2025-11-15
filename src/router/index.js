@@ -91,6 +91,10 @@ import TipsProductivityPage from '../views/others/tips/ProductivityPage.vue'
 import TipsDebuggingPage from '../views/others/tips/DebuggingPage.vue'
 import TipsReviewPage from '../views/others/tips/ReviewPage.vue'
 
+// 글쓰기 및 아티클
+import WritePage from '../views/WritePage.vue'
+import ArticlePage from '../views/ArticlePage.vue'
+
 const routes = [
   {
     path: '/',
@@ -486,6 +490,18 @@ const routes = [
     path: '/others/tips/review',
     name: 'TipsReview',
     component: TipsReviewPage
+  },
+
+  // 글쓰기 및 아티클
+  {
+    path: '/write',
+    name: 'Write',
+    component: WritePage
+  },
+  {
+    path: '/article',
+    name: 'Article',
+    component: ArticlePage
   }
 ]
 

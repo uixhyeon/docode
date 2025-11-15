@@ -1,19 +1,16 @@
 <template>
   <div class="app">
-    <Header />
-    <div class="container">
-      <Sidebar />
-      <main class="main-content">
-        <MainContent />
-      </main>
-    </div>
+    <Navbar />
+    <main class="main-content">
+      <router-view />
+    </main>
+    <WelcomeModal />
   </div>
 </template>
 
 <script setup>
-import Header from './components/Header.vue'
-import Sidebar from './components/Sidebar.vue'
-import MainContent from './components/MainContent.vue'
+import Navbar from './components/Navbar.vue'
+import WelcomeModal from './components/WelcomeModal.vue'
 </script>
 
 <style lang="scss" scoped>
@@ -21,29 +18,12 @@ import MainContent from './components/MainContent.vue'
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.container {
-  display: flex;
-  flex: 1;
-  max-width: 1440px;
-  margin: 0 auto;
-  width: 100%;
+  background: #f9fafb;
 }
 
 .main-content {
   flex: 1;
-  padding: 2rem;
+  width: 100%;
   overflow-y: auto;
-}
-
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-  }
-
-  .main-content {
-    padding: 1rem;
-  }
 }
 </style>

@@ -1,14 +1,55 @@
-// Colors - React Docs Theme
-$primary-color: #087ea4;
-$primary-dark: #149eca;
-$text-primary: #23272f;
-$text-secondary: #57606a;
-$text-link: #087ea4;
+// MDN Theme Colors (CSS Variables)
+:root {
+  // Light mode (default)
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9f9fb;
+  --color-bg-tertiary: #f0f0f4;
+  --color-bg-sidebar: #ffffff;
+  --color-text-primary: #1b1b1b;
+  --color-text-secondary: #5e5e72;
+  --color-text-tertiary: #83839c;
+  --color-border: #d7d7db;
+  --color-border-light: #ededf0;
+  --color-link: #0060df;
+  --color-link-hover: #003eaa;
+  --color-accent: #0060df;
+  --color-code-bg: #f5f5f5;
+  --color-highlight: #fff4cc;
+
+  // Sidebar specific
+  --sidebar-width: 280px;
+  --header-height: 64px;
+}
+
+// Dark mode
+[data-theme="dark"] {
+  --color-bg-primary: #1b1b1d;
+  --color-bg-secondary: #2b2a33;
+  --color-bg-tertiary: #38383d;
+  --color-bg-sidebar: #2b2a33;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b1b1b3;
+  --color-text-tertiary: #8f8f9d;
+  --color-border: #4a4a4f;
+  --color-border-light: #38383d;
+  --color-link: #45a1ff;
+  --color-link-hover: #0a84ff;
+  --color-accent: #0a84ff;
+  --color-code-bg: #38383d;
+  --color-highlight: #594c32;
+}
+
+// Legacy SCSS variables for backward compatibility
+$primary-color: #0060df;
+$primary-dark: #003eaa;
+$text-primary: #1b1b1b;
+$text-secondary: #5e5e72;
+$text-link: #0060df;
 $bg-primary: #ffffff;
-$bg-secondary: #f6f7f9;
-$bg-code: #282c34;
-$border-color: #e4e7eb;
-$highlight-bg: #fff8c5;
+$bg-secondary: #f9f9fb;
+$bg-code: #f5f5f5;
+$border-color: #d7d7db;
+$highlight-bg: #fff4cc;
 
 // Spacing
 $spacing-xs: 0.25rem;

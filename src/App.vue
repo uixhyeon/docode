@@ -1,16 +1,40 @@
 <template>
   <div class="app">
-    <Navbar />
+    <MDNHeader @toggle-sidebar="toggleSidebar" />
+    <MDNSidebar :is-open="isSidebarOpen" />
+
     <main class="main-content">
-      <router-view />
+      <div class="content-wrapper">
+        <router-view />
+      </div>
     </main>
+
+    <!-- Mobile Overlay -->
+    <div
+      v-if="isSidebarOpen"
+      class="sidebar-overlay"
+      @click="closeSidebar"
+    ></div>
+
     <WelcomeModal />
   </div>
 </template>
 
 <script setup>
-import Navbar from './components/Navbar.vue'
+import { ref } from 'vue'
+import MDNHeader from './components/MDNHeader.vue'
+import MDNSidebar from './components/MDNSidebar.vue'
 import WelcomeModal from './components/WelcomeModal.vue'
+
+const isSidebarOpen = ref(false)
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
+
+const closeSidebar = () => {
+  isSidebarOpen.value = false
+}
 </script>
 
 <style lang="scss" scoped>
@@ -18,12 +42,46 @@ import WelcomeModal from './components/WelcomeModal.vue'
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f9fafb;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .main-content {
+  margin-top: var(--header-height);
+  margin-left: 0;
   flex: 1;
   width: 100%;
-  overflow-y: auto;
+  min-height: calc(100vh - var(--header-height));
+
+  @media (min-width: 769px) {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+  }
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+
+  @media (min-width: 769px) {
+    padding: 2.5rem 2rem;
+  }
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 85;
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
 }
 </style>

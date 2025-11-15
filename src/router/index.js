@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { auth } from '@/firebase/config'
 import HomePage from '../views/HomePage.vue'
 import LoginPage from '../views/LoginPage.vue'
+import SignupPage from '../views/SignupPage.vue'
 
 // 과목/프레임워크 - React
 import ReactHooksPage from '../views/subjects/react/HooksPage.vue'
@@ -98,6 +99,11 @@ import WritePage from '../views/WritePage.vue'
 import ArticlePage from '../views/ArticlePage.vue'
 
 const routes = [
+  {
+    path: '/signup',
+    name: 'Signup',
+    component: SignupPage
+  },
   {
     path: '/login',
     name: 'Login',
@@ -524,8 +530,8 @@ router.beforeEach((to, from, next) => {
   const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
   const user = auth.currentUser
 
-  // 로그인 페이지가 아니면 모두 인증 필요
-  if (to.path !== '/login' && !user) {
+  // 로그인, 회원가입 페이지가 아니면 모두 인증 필요
+  if (to.path !== '/login' && to.path !== '/signup' && !user) {
     next('/login')
   } else if (requiresGuest && user) {
     // 로그인 페이지인데 이미 로그인한 경우

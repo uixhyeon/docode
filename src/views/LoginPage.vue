@@ -13,11 +13,11 @@
 
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
-            <label for="email">이메일</label>
+            <label for="username">아이디</label>
             <input
-              id="email"
-              v-model="email"
-              type="email"
+              id="username"
+              v-model="username"
+              type="text"
               placeholder="uixhyeon"
               required
               autocomplete="username"
@@ -30,7 +30,7 @@
               id="password"
               v-model="password"
               type="password"
-              placeholder="비밀번호를 입력하세요"
+              placeholder="uixhyeon"
               required
               autocomplete="current-password"
             />
@@ -58,7 +58,7 @@ import { auth } from '@/firebase/config'
 
 const router = useRouter()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const loading = ref(false)
@@ -68,14 +68,16 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    await signInWithEmailAndPassword(auth, email.value, password.value)
+    // username을 이메일 형식으로 변환
+    const email = `${username.value}@codearchive.com`
+    await signInWithEmailAndPassword(auth, email, password.value)
     router.push('/')
   } catch (error) {
     console.error('Login error:', error)
 
     switch (error.code) {
       case 'auth/invalid-email':
-        errorMessage.value = '유효하지 않은 이메일 형식입니다.'
+        errorMessage.value = '유효하지 않은 아이디 형식입니다.'
         break
       case 'auth/user-disabled':
         errorMessage.value = '비활성화된 계정입니다.'
@@ -87,7 +89,7 @@ const handleLogin = async () => {
         errorMessage.value = '잘못된 비밀번호입니다.'
         break
       case 'auth/invalid-credential':
-        errorMessage.value = '이메일 또는 비밀번호가 올바르지 않습니다.'
+        errorMessage.value = '아이디 또는 비밀번호가 올바르지 않습니다.'
         break
       default:
         errorMessage.value = '로그인에 실패했습니다. 다시 시도해주세요.'

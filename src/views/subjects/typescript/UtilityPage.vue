@@ -11,29 +11,37 @@
       <section class="content-section">
         <h2>주요 내용</h2>
         <div class="content-list">
-          <div class="content-item">
-            <h3>Partial & Required</h3>
-            <p>속성의 필수 여부 변경</p>
-          </div>
-          <div class="content-item">
-            <h3>Readonly & Record</h3>
-            <p>읽기 전용과 기록 타입</p>
-          </div>
-          <div class="content-item">
-            <h3>Pick & Omit</h3>
-            <p>선택적 속성 추출</p>
-          </div>
-          <div class="content-item">
-            <h3>Exclude & Extract</h3>
-            <p>합집합에서 타입 제외/추출</p>
-          </div>
-          <div class="content-item">
-            <h3>ReturnType & Parameters</h3>
-            <p>함수 타입 정보 추출</p>
-          </div>
-          <div class="content-item">
-            <h3>Awaited & ThisType</h3>
-            <p>Promise와 this 타입</p>
+          <div v-for="topic in topics" :key="topic.id" class="topic-wrapper">
+            <div class="content-item">
+              <div class="item-header">
+                <div class="item-title-area">
+                  <h3>{{ topic.title }}</h3>
+                  <p>{{ topic.description }}</p>
+                </div>
+                <button class="write-btn" @click="goToWrite(topic.id, topic.title)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  <span>글쓰기</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 작성된 글 목록 -->
+            <div v-if="getArticles(topic.id).length > 0" class="articles-list">
+              <div
+                v-for="article in getArticles(topic.id)"
+                :key="article.id"
+                class="article-card"
+                @click="viewArticle(article.id)"
+              >
+                <div class="article-header">
+                  <h4>{{ article.title }}</h4>
+                  <span class="article-date">{{ formatDate(article.createdAt) }}</span>
+                </div>
+                <p class="article-preview">{{ article.preview }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -42,7 +50,11 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import TabNavigation from '../../../components/TabNavigation.vue'
+
+const router = useRouter()
 
 const tabs = [
   { name: 'Types', path: '/subjects/typescript/types', icon: '📘' },
@@ -50,6 +62,87 @@ const tabs = [
   { name: 'Utility Types', path: '/subjects/typescript/utility', icon: '🔧' },
   { name: 'Config', path: '/subjects/typescript/config', icon: '⚙️' },
 ]
+
+const topics = [
+  {
+    id: 'partial-required',
+    title: 'Partial & Required',
+    description: '속성의 필수 여부 변경'
+  },
+  {
+    id: 'readonly-record',
+    title: 'Readonly & Record',
+    description: '읽기 전용과 기록 타입'
+  },
+  {
+    id: 'pick-omit',
+    title: 'Pick & Omit',
+    description: '선택적 속성 추출'
+  },
+  {
+    id: 'exclude-extract',
+    title: 'Exclude & Extract',
+    description: '합집합에서 타입 제외/추출'
+  },
+  {
+    id: 'returntype-parameters',
+    title: 'ReturnType & Parameters',
+    description: '함수 타입 정보 추출'
+  },
+  {
+    id: 'awaited-thistype',
+    title: 'Awaited & ThisType',
+    description: 'Promise와 this 타입'
+  }
+]
+
+const articles = ref([])
+
+// localStorage에서 글 목록 불러오기
+onMounted(() => {
+  const savedArticles = localStorage.getItem('articles_typescript_utility')
+  if (savedArticles) {
+    articles.value = JSON.parse(savedArticles)
+  }
+})
+
+// 특정 주제의 글 목록 가져오기
+const getArticles = (topicId) => {
+  return articles.value.filter(article => article.topicId === topicId)
+}
+
+// 글쓰기 페이지로 이동
+const goToWrite = (topicId, topicTitle) => {
+  router.push({
+    path: '/write',
+    query: {
+      category: 'subjects',
+      subcategory: 'typescript',
+      page: 'utility',
+      topic: topicId,
+      topicTitle: topicTitle
+    }
+  })
+}
+
+// 글 상세 보기
+const viewArticle = (articleId) => {
+  router.push({
+    path: '/article',
+    query: {
+      id: articleId
+    }
+  })
+}
+
+// 날짜 포맷
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}.${month}.${day}`
+}
 </script>
 
 <style lang="scss" scoped>
@@ -98,7 +191,13 @@ const tabs = [
 .content-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+}
+
+.topic-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .content-item {
@@ -112,6 +211,17 @@ const tabs = [
     border-color: var(--color-accent);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.item-title-area {
+  flex: 1;
 
   h3 {
     font-size: 1.25rem;
@@ -126,5 +236,91 @@ const tabs = [
     margin: 0;
     line-height: 1.6;
   }
+}
+
+.write-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--color-link-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 96, 223, 0.3);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 480px) {
+    span {
+      display: none;
+    }
+  }
+}
+
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-left: 1rem;
+}
+
+.article-card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--color-accent);
+    background: var(--color-bg-primary);
+    transform: translateX(4px);
+  }
+}
+
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+}
+
+.article-date {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.article-preview {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

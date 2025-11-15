@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { auth } from '@/firebase/config'
 import HomePage from '../views/HomePage.vue'
+import LoginPage from '../views/LoginPage.vue'
 
 // 과목/프레임워크 - React
 import ReactHooksPage from '../views/subjects/react/HooksPage.vue'
@@ -97,9 +99,16 @@ import ArticlePage from '../views/ArticlePage.vue'
 
 const routes = [
   {
+    path: '/login',
+    name: 'Login',
+    component: LoginPage,
+    meta: { requiresGuest: true }
+  },
+  {
     path: '/',
     name: 'Home',
-    component: HomePage
+    component: HomePage,
+    meta: { requiresAuth: true }
   },
 
   // 과목/프레임워크 - React
@@ -508,6 +517,22 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// 인증 가드
+router.beforeEach((to, from, next) => {
+  const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
+  const user = auth.currentUser
+
+  // 로그인 페이지가 아니면 모두 인증 필요
+  if (to.path !== '/login' && !user) {
+    next('/login')
+  } else if (requiresGuest && user) {
+    // 로그인 페이지인데 이미 로그인한 경우
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router

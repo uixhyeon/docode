@@ -84,10 +84,10 @@
           >
             <div class="card-header-info">
               <div class="card-type">
-                {{ card.type === 'extract' ? '📄 발췌' : '📝 메모' }}
-              </div>
-              <div v-if="card.sourceLineStart !== undefined" class="card-source">
-                Line {{ card.sourceLineStart + 1 }}{{ card.sourceLineEnd !== card.sourceLineStart ? `-${card.sourceLineEnd + 1}` : '' }}
+                <span v-if="card.type === 'extract'">
+                  📄 발췌 <span class="line-info">Line {{ card.sourceLineStart + 1 }}</span>
+                </span>
+                <span v-else>📝 메모</span>
               </div>
             </div>
             <div class="card-content">
@@ -584,6 +584,11 @@ const formatDate = (dateString) => {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-tertiary);
+
+  .line-info {
+    color: var(--color-accent);
+    font-family: monospace;
+  }
 }
 
 .card-source {

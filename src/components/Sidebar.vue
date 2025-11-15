@@ -113,7 +113,7 @@
 
       &.active {
         border-left: 2px solid $primary-color;
-        margin-left: -#{$spacing-md + 2px};
+        margin-left: calc(-#{$spacing-md} - 2px);
         padding-left: $spacing-md;
       }
     }

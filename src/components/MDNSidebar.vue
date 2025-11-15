@@ -95,9 +95,10 @@ const categories = [
     icon: '🎨',
     path: '/ui-features',
     children: [
-      { name: '컴포넌트', path: '/ui-features/components' },
-      { name: '레이아웃', path: '/ui-features/layouts' },
-      { name: '애니메이션', path: '/ui-features/animations' }
+      { name: '인터랙션', path: '/ui-features/interaction' },
+      { name: '레이아웃', path: '/ui-features/layout' },
+      { name: '애니메이션', path: '/ui-features/animation' },
+      { name: '컴포넌트', path: '/ui-features/component' }
     ]
   },
   {
@@ -107,7 +108,8 @@ const categories = [
     children: [
       { name: 'API 연동', path: '/development/api' },
       { name: '상태 관리', path: '/development/state' },
-      { name: '최적화', path: '/development/optimization' }
+      { name: '최적화', path: '/development/optimization' },
+      { name: '테스팅', path: '/development/testing' }
     ]
   },
   {
@@ -116,7 +118,8 @@ const categories = [
     path: '/others',
     children: [
       { name: '도구', path: '/others/tools' },
-      { name: '참고 자료', path: '/others/references' }
+      { name: '참고 자료', path: '/others/references' },
+      { name: '팁', path: '/others/tips' }
     ]
   }
 ]

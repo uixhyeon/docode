@@ -1,47 +1,81 @@
 <template>
   <aside class="sidebar">
     <nav class="sidebar-nav">
+      <!-- 홈 링크 -->
       <div class="nav-section">
-        <h4 class="section-title">GET STARTED</h4>
-        <ul class="nav-list">
-          <li><a href="#" class="nav-item">Quick Start</a></li>
-          <li><a href="#" class="nav-item">Tutorial</a></li>
-          <li><a href="#" class="nav-item">Thinking in React</a></li>
-        </ul>
+        <router-link to="/" class="home-link">
+          <span class="icon">🏠</span>
+          <span>홈</span>
+        </router-link>
       </div>
 
-      <div class="nav-section">
-        <h4 class="section-title">LEARN REACT</h4>
-        <ul class="nav-list">
-          <li><a href="#" class="nav-item">Installation</a></li>
-          <li><a href="#" class="nav-item">Describing the UI</a></li>
-          <li><a href="#" class="nav-item">Adding Interactivity</a></li>
-          <li><a href="#" class="nav-item">Managing State</a></li>
-          <li><a href="#" class="nav-item">Escape Hatches</a></li>
-        </ul>
-      </div>
+      <!-- 카테고리 목록 -->
+      <div
+        v-for="category in categories"
+        :key="category.id"
+        class="nav-section"
+      >
+        <h4 class="section-title">{{ category.name }}</h4>
 
-      <div class="nav-section active">
-        <h4 class="section-title">INSTALLATION</h4>
-        <ul class="nav-list">
-          <li><a href="#" class="nav-item">Start a New React Project</a></li>
-          <li><a href="#" class="nav-item">Add React to an Existing Project</a></li>
-          <li><a href="#" class="nav-item">Editor Setup</a></li>
-          <li><a href="#" class="nav-item active">React Developer Tools</a></li>
-        </ul>
-      </div>
+        <div
+          v-for="subcategory in category.subcategories"
+          :key="subcategory.id"
+          class="subcategory"
+        >
+          <button
+            class="subcategory-header"
+            @click="toggleSubcategory(subcategory.id)"
+            :class="{ active: expandedSubcategories.includes(subcategory.id) }"
+          >
+            <span class="icon">{{ subcategory.icon }}</span>
+            <span class="name">{{ subcategory.name }}</span>
+            <svg
+              class="toggle-icon"
+              :class="{ rotated: expandedSubcategories.includes(subcategory.id) }"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
 
-      <div class="nav-section">
-        <h4 class="section-title">ON THIS PAGE</h4>
-        <ul class="nav-list toc">
-          <li><a href="#browser-extension" class="nav-item">Browser extension</a></li>
-          <li><a href="#safari" class="nav-item">Safari and other browsers</a></li>
-          <li><a href="#mobile" class="nav-item">Mobile (React Native)</a></li>
-        </ul>
+          <transition name="expand">
+            <ul v-if="expandedSubcategories.includes(subcategory.id)" class="nav-list">
+              <li v-for="item in subcategory.items" :key="item.id">
+                <router-link
+                  :to="item.path"
+                  class="nav-item"
+                  active-class="active"
+                >
+                  {{ item.name }}
+                </router-link>
+              </li>
+            </ul>
+          </transition>
+        </div>
       </div>
     </nav>
   </aside>
 </template>
+
+<script setup>
+import { ref } from 'vue'
+import { categories } from '../data/categories.js'
+
+const expandedSubcategories = ref([])
+
+const toggleSubcategory = (subcategoryId) => {
+  const index = expandedSubcategories.value.indexOf(subcategoryId)
+  if (index > -1) {
+    expandedSubcategories.value.splice(index, 1)
+  } else {
+    expandedSubcategories.value.push(subcategoryId)
+  }
+}
+</script>
 
 <style lang="scss" scoped>
 .sidebar {
@@ -78,12 +112,34 @@
   gap: $spacing-xl;
 }
 
-.nav-section {
-  &.active {
-    .section-title {
-      color: $primary-color;
-    }
+.home-link {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius-sm;
+  color: $text-secondary;
+  font-weight: 600;
+  transition: $transition-base;
+  text-decoration: none;
+
+  &:hover {
+    color: $text-primary;
+    background-color: rgba($primary-color, 0.05);
   }
+
+  &.active {
+    color: $primary-color;
+    background-color: rgba($primary-color, 0.1);
+  }
+
+  .icon {
+    font-size: $font-size-lg;
+  }
+}
+
+.nav-section {
+  margin-bottom: $spacing-md;
 }
 
 .section-title {
@@ -93,6 +149,56 @@
   letter-spacing: 0.05em;
   color: $text-secondary;
   margin-bottom: $spacing-md;
+  padding: 0 $spacing-sm;
+}
+
+.subcategory {
+  margin-bottom: $spacing-sm;
+}
+
+.subcategory-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: none;
+  border: none;
+  border-radius: $border-radius-sm;
+  color: $text-secondary;
+  font-weight: 600;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: $transition-base;
+  text-align: left;
+
+  &:hover {
+    background-color: rgba($primary-color, 0.05);
+    color: $text-primary;
+  }
+
+  &.active {
+    color: $primary-color;
+    background-color: rgba($primary-color, 0.08);
+  }
+
+  .icon {
+    font-size: $font-size-base;
+  }
+
+  .name {
+    flex: 1;
+  }
+
+  .toggle-icon {
+    color: currentColor;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+
+    &.rotated {
+      transform: rotate(-180deg);
+    }
+  }
 }
 
 .nav-list {
@@ -101,32 +207,19 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
-
-  &.toc {
-    border-left: 2px solid $border-color;
-    padding-left: $spacing-md;
-
-    .nav-item {
-      font-size: $font-size-sm;
-      padding: $spacing-xs 0;
-
-      &.active {
-        border-left: 2px solid $primary-color;
-        margin-left: calc(-#{$spacing-md} - 2px);
-        padding-left: $spacing-md;
-      }
-    }
-  }
+  gap: 2px;
+  padding-left: $spacing-xl;
+  margin-top: $spacing-xs;
 }
 
 .nav-item {
   color: $text-secondary;
-  padding: $spacing-sm $spacing-md;
+  padding: $spacing-xs $spacing-md;
   border-radius: $border-radius-sm;
   display: block;
   font-size: $font-size-sm;
   transition: $transition-base;
+  text-decoration: none;
 
   &:hover {
     color: $text-primary;
@@ -138,5 +231,23 @@
     background-color: rgba($primary-color, 0.1);
     font-weight: 600;
   }
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 500px;
 }
 </style>

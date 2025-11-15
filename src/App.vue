@@ -4,16 +4,17 @@
     <div class="container">
       <Sidebar />
       <main class="main-content">
-        <MainContent />
+        <router-view />
       </main>
     </div>
+    <WelcomeModal />
   </div>
 </template>
 
 <script setup>
 import Header from './components/Header.vue'
 import Sidebar from './components/Sidebar.vue'
-import MainContent from './components/MainContent.vue'
+import WelcomeModal from './components/WelcomeModal.vue'
 </script>
 
 <style lang="scss" scoped>

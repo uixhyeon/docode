@@ -11,11 +11,29 @@
         </button>
         <div class="title-area">
           <h1>{{ topicTitle }}</h1>
+          <div class="input-row">
+            <input
+              v-model="articleTitle"
+              type="text"
+              placeholder="글 제목을 입력하세요"
+              class="title-input"
+            />
+            <select v-model="selectedLanguage" class="language-select">
+              <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="css">CSS</option>
+              <option value="html">HTML</option>
+              <option value="vue">Vue</option>
+              <option value="react">React</option>
+            </select>
+          </div>
           <input
-            v-model="articleTitle"
+            v-model="embedUrl"
             type="text"
-            placeholder="글 제목을 입력하세요"
-            class="title-input"
+            placeholder="임베드 URL (CodePen, CodeSandbox, Vercel 등)"
+            class="embed-input"
           />
         </div>
       </div>
@@ -24,7 +42,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
           </svg>
-          <span>저장하기</span>
+          <span>{{ isEditMode ? '수정 완료' : '저장하기' }}</span>
         </button>
       </div>
     </header>
@@ -35,12 +53,7 @@
       <div class="left-panel" :style="{ width: leftPanelWidth + '%' }">
         <div class="panel-header">
           <h3>참고 문서</h3>
-          <button class="add-doc-btn" @click="showDocSelector = true">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            문서 추가
-          </button>
+          <div class="language-badge">{{ selectedLanguage }}</div>
         </div>
 
         <div class="document-viewer" ref="documentViewer">
@@ -58,7 +71,7 @@
               @mouseenter="onLineHover(index)"
             >
               <span class="line-number">{{ index + 1 }}</span>
-              <span class="line-content" v-html="highlightSyntax(line)"></span>
+              <span class="line-content" v-html="highlightSyntax(line, selectedLanguage)"></span>
             </div>
           </div>
           <div v-else class="empty-state">
@@ -168,6 +181,10 @@ const route = useRoute()
 // 페이지 정보
 const topicTitle = ref(route.query.topicTitle || '')
 const articleTitle = ref('')
+const selectedLanguage = ref('javascript')
+const embedUrl = ref('')
+const isEditMode = ref(false)
+const editingArticleId = ref(null)
 
 // 패널 크기
 const leftPanelWidth = ref(50)
@@ -350,12 +367,28 @@ const focusOnSource = (card) => {
   }, 2000)
 }
 
-// Syntax Highlighting (간단한 버전)
-const highlightSyntax = (line) => {
-  // JavaScript 키워드 하이라이트
-  const keywords = ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'class', 'import', 'export', 'from']
-  let highlighted = line
+// Syntax Highlighting
+const highlightSyntax = (code, language = 'javascript') => {
+  if (!code) return ''
 
+  const lang = (language || 'javascript').toLowerCase()
+
+  // 언어별 키워드 정의
+  const keywordsByLanguage = {
+    javascript: ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'class', 'import', 'export', 'from', 'async', 'await', 'new', 'this', 'try', 'catch', 'throw'],
+    typescript: ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'class', 'import', 'export', 'from', 'async', 'await', 'new', 'this', 'try', 'catch', 'throw', 'interface', 'type', 'enum', 'public', 'private', 'protected'],
+    python: ['def', 'class', 'import', 'from', 'return', 'if', 'else', 'elif', 'for', 'while', 'try', 'except', 'finally', 'with', 'as', 'lambda', 'yield'],
+    java: ['public', 'private', 'protected', 'class', 'interface', 'extends', 'implements', 'return', 'if', 'else', 'for', 'while', 'new', 'this', 'try', 'catch', 'finally', 'throw', 'throws'],
+    vue: ['template', 'script', 'style', 'setup', 'export', 'default', 'import', 'from', 'const', 'let', 'var', 'function', 'return', 'if', 'else'],
+    react: ['import', 'export', 'default', 'from', 'const', 'let', 'var', 'function', 'return', 'if', 'else', 'useState', 'useEffect', 'useContext'],
+    css: ['display', 'position', 'flex', 'grid', 'margin', 'padding', 'color', 'background', 'border', 'width', 'height'],
+    html: []
+  }
+
+  const keywords = keywordsByLanguage[lang] || keywordsByLanguage.javascript
+  let highlighted = code
+
+  // 키워드 하이라이트
   keywords.forEach(keyword => {
     const regex = new RegExp(`\\b${keyword}\\b`, 'g')
     highlighted = highlighted.replace(regex, `<span style="color: #0000ff; font-weight: 600;">${keyword}</span>`)
@@ -365,7 +398,19 @@ const highlightSyntax = (line) => {
   highlighted = highlighted.replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g, '<span style="color: #a31515;">$&</span>')
 
   // 주석 하이라이트
-  highlighted = highlighted.replace(/(\/\/.*$)/g, '<span style="color: #008000; font-style: italic;">$1</span>')
+  if (lang === 'javascript' || lang === 'typescript' || lang === 'java' || lang === 'vue' || lang === 'react') {
+    highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span style="color: #008000; font-style: italic;">$1</span>')
+    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #008000; font-style: italic;">$1</span>')
+  } else if (lang === 'python') {
+    highlighted = highlighted.replace(/(#.*$)/gm, '<span style="color: #008000; font-style: italic;">$1</span>')
+  } else if (lang === 'css') {
+    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #008000; font-style: italic;">$1</span>')
+  } else if (lang === 'html') {
+    highlighted = highlighted.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span style="color: #008000; font-style: italic;">$1</span>')
+  }
+
+  // 숫자 하이라이트
+  highlighted = highlighted.replace(/\b(\d+)\b/g, '<span style="color: #098658;">$1</span>')
 
   return highlighted
 }
@@ -377,33 +422,97 @@ const saveArticle = () => {
     return
   }
 
-  const article = {
-    id: Date.now().toString(),
-    title: articleTitle.value,
-    topicId: route.query.topic,
-    category: route.query.category,
-    subcategory: route.query.subcategory,
-    page: route.query.page,
-    cards: cards.value,
-    referenceDocument: referenceDocument.value,
-    createdAt: new Date().toISOString(),
-    preview: cards.value[0]?.content.substring(0, 100) || '내용 없음'
-  }
-
-  // localStorage에 저장
   const storageKey = `articles_${route.query.subcategory}_${route.query.page}`
-  const existingArticles = JSON.parse(localStorage.getItem(storageKey) || '[]')
-  existingArticles.push(article)
-  localStorage.setItem(storageKey, JSON.stringify(existingArticles))
 
-  alert('저장되었습니다!')
-  router.back()
+  try {
+    if (isEditMode.value && editingArticleId.value) {
+      // 수정 모드
+      const existingArticles = JSON.parse(localStorage.getItem(storageKey) || '[]')
+      const index = existingArticles.findIndex(a => a.id === editingArticleId.value)
+
+      if (index !== -1) {
+        existingArticles[index] = {
+          ...existingArticles[index],
+          title: articleTitle.value,
+          cards: cards.value,
+          referenceDocument: referenceDocument.value,
+          language: selectedLanguage.value,
+          embedUrl: embedUrl.value,
+          updatedAt: new Date().toISOString(),
+          preview: cards.value[0]?.content.substring(0, 100) || '내용 없음'
+        }
+        localStorage.setItem(storageKey, JSON.stringify(existingArticles))
+        alert('수정되었습니다!')
+      }
+    } else {
+      // 새 글 작성
+      const article = {
+        id: Date.now().toString(),
+        title: articleTitle.value,
+        topicId: route.query.topic,
+        topicTitle: topicTitle.value,
+        category: route.query.category,
+        subcategory: route.query.subcategory,
+        page: route.query.page,
+        cards: cards.value,
+        referenceDocument: referenceDocument.value,
+        language: selectedLanguage.value,
+        embedUrl: embedUrl.value,
+        createdAt: new Date().toISOString(),
+        preview: cards.value[0]?.content.substring(0, 100) || '내용 없음'
+      }
+
+      const existingArticles = JSON.parse(localStorage.getItem(storageKey) || '[]')
+      existingArticles.push(article)
+      localStorage.setItem(storageKey, JSON.stringify(existingArticles))
+      alert('저장되었습니다!')
+    }
+
+    router.back()
+  } catch (error) {
+    console.error('Failed to save article:', error)
+    alert('저장에 실패했습니다. 용량이 부족할 수 있습니다.')
+  }
 }
 
-// 예시 문서 로드
+// 예시 문서 로드 및 수정 모드 처리
 onMounted(() => {
-  // 예시 코드 추가
-  referenceDocument.value = `// useState Hook 예제
+  const editId = route.query.editId
+
+  if (editId) {
+    // 수정 모드
+    isEditMode.value = true
+    editingArticleId.value = editId
+
+    // localStorage에서 기존 글 찾기
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith('articles_')) {
+        try {
+          const articles = JSON.parse(localStorage.getItem(key) || '[]')
+          const article = articles.find(a => a.id === editId)
+
+          if (article) {
+            articleTitle.value = article.title
+            referenceDocument.value = article.referenceDocument || ''
+            selectedLanguage.value = article.language || 'javascript'
+            embedUrl.value = article.embedUrl || ''
+            cards.value = article.cards || []
+
+            // 카드 ID 카운터 업데이트
+            if (cards.value.length > 0) {
+              cardIdCounter = Math.max(...cards.value.map(c => c.id)) + 1
+            }
+            break
+          }
+        } catch (error) {
+          console.error('Failed to load article:', error)
+        }
+      }
+    }
+  } else {
+    // 새 글 작성 - 예시 코드 추가
+    referenceDocument.value = `// useState Hook 예제
 import { useState } from 'react';
 
 function Counter() {
@@ -427,6 +536,7 @@ function Counter() {
 }
 
 export default Counter;`
+  }
 })
 </script>
 

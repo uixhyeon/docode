@@ -44,6 +44,8 @@
 </template>
 
 <style lang="scss" scoped>
+@use '../styles/variables.scss' as *;
+
 .sidebar {
   width: 280px;
   min-width: 280px;

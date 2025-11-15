@@ -50,6 +50,8 @@ const toggleTheme = () => {
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/variables.scss' as *;
+
 .header {
   background-color: $bg-primary;
   border-bottom: 1px solid $border-color;

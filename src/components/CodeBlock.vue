@@ -46,6 +46,8 @@ const copyCode = async () => {
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/variables.scss' as *;
+
 .code-block {
   margin: $spacing-lg 0;
   border-radius: $border-radius-md;

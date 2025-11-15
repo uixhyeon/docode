@@ -170,6 +170,8 @@ const mobileRunCode = ref(`react-devtools`)
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/variables.scss' as *;
+
 .content {
   max-width: 800px;
 }

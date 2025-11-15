@@ -97,7 +97,6 @@ const toggleTheme = () => {
 .nav {
   display: flex;
   gap: $spacing-xl;
-  flex: 1;
   margin-left: $spacing-xxl;
 
   @media (max-width: $breakpoint-md) {
@@ -120,6 +119,7 @@ const toggleTheme = () => {
   display: flex;
   gap: $spacing-md;
   align-items: center;
+  margin-left: auto;
 }
 
 .search-btn {

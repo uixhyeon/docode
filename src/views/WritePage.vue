@@ -189,6 +189,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { auth } from '@/firebase/config'
+import { saveArticle as saveToFirestore, updateArticle, getArticle } from '@/firebase/firestore'
 
 const router = useRouter()
 const route = useRoute()
@@ -470,67 +472,52 @@ const highlightSyntax = (code, language = 'javascript') => {
 }
 
 // 저장하기
-const saveArticle = () => {
+const saveArticle = async () => {
   if (!articleTitle.value.trim()) {
     alert('글 제목을 입력해주세요.')
     return
   }
 
-  const storageKey = `articles_${route.query.subcategory}_${route.query.page}`
+  const user = auth.currentUser
+  if (!user) {
+    alert('로그인이 필요합니다.')
+    return
+  }
 
   try {
+    const articleData = {
+      title: articleTitle.value,
+      topicId: route.query.topic,
+      topicTitle: topicTitle.value,
+      category: route.query.category,
+      subcategory: route.query.subcategory,
+      page: route.query.page,
+      cards: cards.value,
+      referenceDocument: referenceDocument.value,
+      language: selectedLanguage.value,
+      embedUrl: embedUrl.value,
+      preview: cards.value[0]?.content.substring(0, 100) || '내용 없음'
+    }
+
     if (isEditMode.value && editingArticleId.value) {
       // 수정 모드
-      const existingArticles = JSON.parse(localStorage.getItem(storageKey) || '[]')
-      const index = existingArticles.findIndex(a => a.id === editingArticleId.value)
-
-      if (index !== -1) {
-        existingArticles[index] = {
-          ...existingArticles[index],
-          title: articleTitle.value,
-          cards: cards.value,
-          referenceDocument: referenceDocument.value,
-          language: selectedLanguage.value,
-          embedUrl: embedUrl.value,
-          updatedAt: new Date().toISOString(),
-          preview: cards.value[0]?.content.substring(0, 100) || '내용 없음'
-        }
-        localStorage.setItem(storageKey, JSON.stringify(existingArticles))
-        alert('수정되었습니다!')
-      }
+      await updateArticle(user.uid, editingArticleId.value, articleData)
+      alert('수정되었습니다!')
     } else {
       // 새 글 작성
-      const article = {
-        id: Date.now().toString(),
-        title: articleTitle.value,
-        topicId: route.query.topic,
-        topicTitle: topicTitle.value,
-        category: route.query.category,
-        subcategory: route.query.subcategory,
-        page: route.query.page,
-        cards: cards.value,
-        referenceDocument: referenceDocument.value,
-        language: selectedLanguage.value,
-        embedUrl: embedUrl.value,
-        createdAt: new Date().toISOString(),
-        preview: cards.value[0]?.content.substring(0, 100) || '내용 없음'
-      }
-
-      const existingArticles = JSON.parse(localStorage.getItem(storageKey) || '[]')
-      existingArticles.push(article)
-      localStorage.setItem(storageKey, JSON.stringify(existingArticles))
+      await saveToFirestore(user.uid, articleData)
       alert('저장되었습니다!')
     }
 
     router.back()
   } catch (error) {
     console.error('Failed to save article:', error)
-    alert('저장에 실패했습니다. 용량이 부족할 수 있습니다.')
+    alert('저장에 실패했습니다.')
   }
 }
 
 // 예시 문서 로드 및 수정 모드 처리
-onMounted(() => {
+onMounted(async () => {
   const editId = route.query.editId
 
   if (editId) {
@@ -538,31 +525,34 @@ onMounted(() => {
     isEditMode.value = true
     editingArticleId.value = editId
 
-    // localStorage에서 기존 글 찾기
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key?.startsWith('articles_')) {
-        try {
-          const articles = JSON.parse(localStorage.getItem(key) || '[]')
-          const article = articles.find(a => a.id === editId)
+    const user = auth.currentUser
+    if (!user) {
+      alert('로그인이 필요합니다.')
+      router.push('/login')
+      return
+    }
 
-          if (article) {
-            articleTitle.value = article.title
-            referenceDocument.value = article.referenceDocument || ''
-            selectedLanguage.value = article.language || 'javascript'
-            embedUrl.value = article.embedUrl || ''
-            cards.value = article.cards || []
+    try {
+      const article = await getArticle(user.uid, editId)
 
-            // 카드 ID 카운터 업데이트
-            if (cards.value.length > 0) {
-              cardIdCounter = Math.max(...cards.value.map(c => c.id)) + 1
-            }
-            break
-          }
-        } catch (error) {
-          console.error('Failed to load article:', error)
+      if (article) {
+        articleTitle.value = article.title
+        referenceDocument.value = article.referenceDocument || ''
+        selectedLanguage.value = article.language || 'javascript'
+        embedUrl.value = article.embedUrl || ''
+        cards.value = article.cards || []
+
+        // 카드 ID 카운터 업데이트
+        if (cards.value.length > 0) {
+          cardIdCounter = Math.max(...cards.value.map(c => c.id)) + 1
         }
+      } else {
+        alert('아티클을 찾을 수 없습니다.')
+        router.back()
       }
+    } catch (error) {
+      console.error('Failed to load article:', error)
+      alert('아티클 로드에 실패했습니다.')
     }
   }
 })

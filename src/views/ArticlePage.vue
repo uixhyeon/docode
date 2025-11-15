@@ -139,6 +139,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { auth } from '@/firebase/config'
+import { getArticle, deleteArticle as deleteFromFirestore } from '@/firebase/firestore'
 
 const router = useRouter()
 const route = useRoute()
@@ -165,35 +167,32 @@ const sortedCards = computed(() => {
 })
 
 // 아티클 로드
-onMounted(() => {
+onMounted(async () => {
   const articleId = route.query.id
   if (!articleId) {
     router.push('/')
     return
   }
 
-  // 모든 localStorage 키를 확인하여 아티클 찾기
-  let found = false
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key?.startsWith('articles_')) {
-      try {
-        const articles = JSON.parse(localStorage.getItem(key) || '[]')
-        const foundArticle = articles.find(a => a.id === articleId)
-        if (foundArticle) {
-          article.value = foundArticle
-          topicTitle.value = foundArticle.topicTitle || foundArticle.topicId || '주제'
-          found = true
-          break
-        }
-      } catch (error) {
-        console.error('Failed to parse articles:', error)
-      }
-    }
+  const user = auth.currentUser
+  if (!user) {
+    alert('로그인이 필요합니다.')
+    router.push('/login')
+    return
   }
 
-  if (!found) {
-    alert('아티클을 찾을 수 없습니다.')
+  try {
+    const foundArticle = await getArticle(user.uid, articleId)
+    if (foundArticle) {
+      article.value = foundArticle
+      topicTitle.value = foundArticle.topicTitle || foundArticle.topicId || '주제'
+    } else {
+      alert('아티클을 찾을 수 없습니다.')
+      router.push('/')
+    }
+  } catch (error) {
+    console.error('Failed to load article:', error)
+    alert('아티클 로드에 실패했습니다.')
     router.push('/')
   }
 })
@@ -204,29 +203,24 @@ const goBack = () => {
 }
 
 // 아티클 삭제
-const deleteArticle = () => {
+const deleteArticle = async () => {
   if (!confirm('이 글을 삭제하시겠습니까?')) return
 
   const articleId = route.query.id
+  const user = auth.currentUser
 
-  // 모든 localStorage 키를 확인하여 아티클 삭제
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key?.startsWith('articles_')) {
-      try {
-        const articles = JSON.parse(localStorage.getItem(key) || '[]')
-        const index = articles.findIndex(a => a.id === articleId)
-        if (index !== -1) {
-          articles.splice(index, 1)
-          localStorage.setItem(key, JSON.stringify(articles))
-          alert('글이 삭제되었습니다.')
-          router.back()
-          return
-        }
-      } catch (error) {
-        console.error('Failed to delete article:', error)
-      }
-    }
+  if (!user) {
+    alert('로그인이 필요합니다.')
+    return
+  }
+
+  try {
+    await deleteFromFirestore(user.uid, articleId)
+    alert('글이 삭제되었습니다.')
+    router.back()
+  } catch (error) {
+    console.error('Failed to delete article:', error)
+    alert('삭제에 실패했습니다.')
   }
 }
 

@@ -27,6 +27,7 @@
               <option value="html">HTML</option>
               <option value="vue">Vue</option>
               <option value="react">React</option>
+              <option value="markdown">Markdown</option>
             </select>
           </div>
           <input
@@ -52,7 +53,7 @@
       <!-- 왼쪽 패널: 원본 문서 뷰어 -->
       <div class="left-panel" :style="{ width: leftPanelWidth + '%' }">
         <div class="panel-header">
-          <h3>참고 문서</h3>
+          <h3>워크스페이스</h3>
           <div class="header-actions">
             <div class="language-badge">{{ selectedLanguage }}</div>
             <button class="edit-mode-btn" @click="toggleEditMode">
@@ -113,10 +114,10 @@
         @mousedown="startResize"
       ></div>
 
-      <!-- 오른쪽 패널: 워크스페이스 -->
+      <!-- 오른쪽 패널: 노트 -->
       <div class="right-panel">
         <div class="panel-header">
-          <h3>워크스페이스</h3>
+          <h3>노트</h3>
           <button class="add-card-btn" @click="addNewCard">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -396,6 +397,36 @@ const highlightSyntax = (code, language = 'javascript') => {
   if (!code) return ''
 
   const lang = (language || 'javascript').toLowerCase()
+  let highlighted = code
+
+  // Markdown 전용 하이라이팅
+  if (lang === 'markdown') {
+    // 헤더 (# ## ### 등)
+    highlighted = highlighted.replace(/^(#{1,6})\s+(.+)$/gm, '<span style="color: #0000ff; font-weight: 700;">$1</span> <span style="color: #001080; font-weight: 600;">$2</span>')
+
+    // 볼드 **text** or __text__
+    highlighted = highlighted.replace(/(\*\*|__)(.+?)\1/g, '<span style="color: #000000; font-weight: 700;">$1$2$1</span>')
+
+    // 이탤릭 *text* or _text_
+    highlighted = highlighted.replace(/(\*|_)([^\*_]+?)\1/g, '<span style="color: #000000; font-style: italic;">$1$2$1</span>')
+
+    // 인라인 코드 `code`
+    highlighted = highlighted.replace(/`([^`]+)`/g, '<span style="background: #f3f4f6; color: #d73a49; padding: 0.1rem 0.3rem; border-radius: 3px;">$&</span>')
+
+    // 링크 [text](url)
+    highlighted = highlighted.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<span style="color: #0969da;">[</span><span style="color: #0969da; text-decoration: underline;">$1</span><span style="color: #0969da;">]($2)</span>')
+
+    // 리스트 - * + 1.
+    highlighted = highlighted.replace(/^(\s*)([-*+]|\d+\.)\s+/gm, '$1<span style="color: #0000ff; font-weight: 600;">$2</span> ')
+
+    // 인용 >
+    highlighted = highlighted.replace(/^>\s+(.+)$/gm, '<span style="color: #656d76; border-left: 3px solid #d0d7de; padding-left: 0.5rem;">&gt; $1</span>')
+
+    // 코드블록 ```
+    highlighted = highlighted.replace(/```/g, '<span style="color: #6f42c1; font-weight: 600;">```</span>')
+
+    return highlighted
+  }
 
   // 언어별 키워드 정의
   const keywordsByLanguage = {
@@ -410,7 +441,6 @@ const highlightSyntax = (code, language = 'javascript') => {
   }
 
   const keywords = keywordsByLanguage[lang] || keywordsByLanguage.javascript
-  let highlighted = code
 
   // 키워드 하이라이트
   keywords.forEach(keyword => {

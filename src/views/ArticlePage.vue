@@ -279,6 +279,36 @@ const highlightSyntax = (code, language = 'javascript') => {
   if (!code) return ''
 
   const lang = (language || 'javascript').toLowerCase()
+  let highlighted = code
+
+  // Markdown 전용 하이라이팅
+  if (lang === 'markdown') {
+    // 헤더 (# ## ### 등)
+    highlighted = highlighted.replace(/^(#{1,6})\s+(.+)$/gm, '<span style="color: #0000ff; font-weight: 700;">$1</span> <span style="color: #001080; font-weight: 600;">$2</span>')
+
+    // 볼드 **text** or __text__
+    highlighted = highlighted.replace(/(\*\*|__)(.+?)\1/g, '<span style="color: #000000; font-weight: 700;">$1$2$1</span>')
+
+    // 이탤릭 *text* or _text_
+    highlighted = highlighted.replace(/(\*|_)([^\*_]+?)\1/g, '<span style="color: #000000; font-style: italic;">$1$2$1</span>')
+
+    // 인라인 코드 `code`
+    highlighted = highlighted.replace(/`([^`]+)`/g, '<span style="background: #f3f4f6; color: #d73a49; padding: 0.1rem 0.3rem; border-radius: 3px;">$&</span>')
+
+    // 링크 [text](url)
+    highlighted = highlighted.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<span style="color: #0969da;">[</span><span style="color: #0969da; text-decoration: underline;">$1</span><span style="color: #0969da;">]($2)</span>')
+
+    // 리스트 - * + 1.
+    highlighted = highlighted.replace(/^(\s*)([-*+]|\d+\.)\s+/gm, '$1<span style="color: #0000ff; font-weight: 600;">$2</span> ')
+
+    // 인용 >
+    highlighted = highlighted.replace(/^>\s+(.+)$/gm, '<span style="color: #656d76; border-left: 3px solid #d0d7de; padding-left: 0.5rem;">&gt; $1</span>')
+
+    // 코드블록 ```
+    highlighted = highlighted.replace(/```/g, '<span style="color: #6f42c1; font-weight: 600;">```</span>')
+
+    return highlighted
+  }
 
   // 언어별 키워드 정의
   const keywordsByLanguage = {
@@ -286,12 +316,13 @@ const highlightSyntax = (code, language = 'javascript') => {
     typescript: ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'class', 'import', 'export', 'from', 'async', 'await', 'new', 'this', 'try', 'catch', 'throw', 'interface', 'type', 'enum', 'public', 'private', 'protected'],
     python: ['def', 'class', 'import', 'from', 'return', 'if', 'else', 'elif', 'for', 'while', 'try', 'except', 'finally', 'with', 'as', 'lambda', 'yield'],
     java: ['public', 'private', 'protected', 'class', 'interface', 'extends', 'implements', 'return', 'if', 'else', 'for', 'while', 'new', 'this', 'try', 'catch', 'finally', 'throw', 'throws'],
+    vue: ['template', 'script', 'style', 'setup', 'export', 'default', 'import', 'from', 'const', 'let', 'var', 'function', 'return', 'if', 'else'],
+    react: ['import', 'export', 'default', 'from', 'const', 'let', 'var', 'function', 'return', 'if', 'else', 'useState', 'useEffect', 'useContext'],
     css: ['display', 'position', 'flex', 'grid', 'margin', 'padding', 'color', 'background', 'border', 'width', 'height'],
     html: []
   }
 
   const keywords = keywordsByLanguage[lang] || keywordsByLanguage.javascript
-  let highlighted = code
 
   // 키워드 하이라이트
   keywords.forEach(keyword => {
@@ -303,7 +334,7 @@ const highlightSyntax = (code, language = 'javascript') => {
   highlighted = highlighted.replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g, '<span style="color: #a31515;">$&</span>')
 
   // 주석 하이라이트
-  if (lang === 'javascript' || lang === 'typescript' || lang === 'java') {
+  if (lang === 'javascript' || lang === 'typescript' || lang === 'java' || lang === 'vue' || lang === 'react') {
     highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span style="color: #008000; font-style: italic;">$1</span>')
     highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #008000; font-style: italic;">$1</span>')
   } else if (lang === 'python') {

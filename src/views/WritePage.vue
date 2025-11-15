@@ -53,7 +53,7 @@
       <!-- 왼쪽 패널: 원본 문서 뷰어 -->
       <div class="left-panel" :style="{ width: leftPanelWidth + '%' }">
         <div class="panel-header">
-          <h3>참고 문서</h3>
+          <h3>워크스페이스</h3>
           <div class="header-actions">
             <div class="language-badge">{{ selectedLanguage }}</div>
             <button class="edit-mode-btn" @click="toggleEditMode">
@@ -114,10 +114,10 @@
         @mousedown="startResize"
       ></div>
 
-      <!-- 오른쪽 패널: 워크스페이스 -->
+      <!-- 오른쪽 패널: 노트 -->
       <div class="right-panel">
         <div class="panel-header">
-          <h3>워크스페이스</h3>
+          <h3>노트</h3>
           <button class="add-card-btn" @click="addNewCard">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

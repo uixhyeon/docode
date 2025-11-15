@@ -23,7 +23,7 @@
       <!-- 왼쪽 패널: 원본 문서 뷰어 -->
       <div class="left-panel">
         <div class="panel-header">
-          <h3>📄 참고 문서</h3>
+          <h3>📄 워크스페이스</h3>
           <div v-if="article?.language" class="language-badge">
             {{ article.language }}
           </div>
@@ -48,10 +48,10 @@
         </div>
       </div>
 
-      <!-- 오른쪽 패널: 워크스페이스 -->
+      <!-- 오른쪽 패널: 노트 -->
       <div class="right-panel">
         <div class="panel-header">
-          <h3>📝 발췌 내용</h3>
+          <h3>📝 노트</h3>
         </div>
 
         <div class="workspace" ref="workspace">

@@ -53,11 +53,25 @@
       <div class="left-panel" :style="{ width: leftPanelWidth + '%' }">
         <div class="panel-header">
           <h3>참고 문서</h3>
-          <div class="language-badge">{{ selectedLanguage }}</div>
+          <div class="header-actions">
+            <div class="language-badge">{{ selectedLanguage }}</div>
+            <button class="edit-mode-btn" @click="toggleEditMode">
+              {{ isDocEditMode ? '완료' : '편집' }}
+            </button>
+          </div>
         </div>
 
         <div class="document-viewer" ref="documentViewer">
-          <div v-if="referenceDocument" class="document-content">
+          <!-- 편집 모드: textarea -->
+          <textarea
+            v-if="isDocEditMode"
+            v-model="referenceDocument"
+            class="document-editor"
+            placeholder="코드나 문서를 입력하세요..."
+          ></textarea>
+
+          <!-- 뷰 모드: 라인 뷰어 -->
+          <div v-else-if="referenceDocument" class="document-content">
             <div
               v-for="(line, index) in documentLines"
               :key="index"
@@ -75,7 +89,7 @@
             </div>
           </div>
           <div v-else class="empty-state">
-            <p>문서를 추가하여 학습 내용을 정리하세요</p>
+            <p>편집 버튼을 눌러 문서를 입력하세요</p>
           </div>
         </div>
 
@@ -143,7 +157,10 @@
           >
             <div class="card-header">
               <div class="card-type">
-                {{ card.type === 'extract' ? '📄 발췌' : '📝 메모' }}
+                <span v-if="card.type === 'extract'">
+                  📄 발췌 <span class="line-info">Line {{ card.sourceLineStart + 1 }}</span>
+                </span>
+                <span v-else>📝 메모</span>
               </div>
               <div class="card-actions">
                 <button class="color-btn" @click.stop="changeCardColor(card.id)">
@@ -160,9 +177,6 @@
                 placeholder="내용을 입력하세요..."
                 @input="updateCard(card)"
               ></textarea>
-            </div>
-            <div v-if="card.sourceLineStart !== null" class="card-source">
-              Line {{ card.sourceLineStart + 1 }}{{ card.sourceLineEnd !== card.sourceLineStart ? `-${card.sourceLineEnd + 1}` : '' }}
             </div>
           </div>
         </div>
@@ -192,9 +206,19 @@ const isResizing = ref(false)
 
 // 문서 관련
 const referenceDocument = ref('')
+const isDocEditMode = ref(true) // 초기에는 편집 모드
 const documentLines = computed(() => {
   return referenceDocument.value ? referenceDocument.value.split('\n') : []
 })
+
+// 문서 편집 모드 토글
+const toggleEditMode = () => {
+  isDocEditMode.value = !isDocEditMode.value
+  if (!isDocEditMode.value && selectedLines.value.length > 0) {
+    selectedLines.value = []
+    selectionStart.value = null
+  }
+}
 
 // 선택 관련
 const selectedLines = ref([])
@@ -510,32 +534,6 @@ onMounted(() => {
         }
       }
     }
-  } else {
-    // 새 글 작성 - 예시 코드 추가
-    referenceDocument.value = `// useState Hook 예제
-import { useState } from 'react';
-
-function Counter() {
-  const [count, setCount] = useState(0);
-
-  const increment = () => {
-    setCount(count + 1);
-  };
-
-  const decrement = () => {
-    setCount(count - 1);
-  };
-
-  return (
-    <div>
-      <h2>Count: {count}</h2>
-      <button onClick={increment}>+1</button>
-      <button onClick={decrement}>-1</button>
-    </div>
-  );
-}
-
-export default Counter;`
   }
 })
 </script>
@@ -601,14 +599,52 @@ export default Counter;`
   }
 }
 
-.title-input {
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 700px;
+}
+
+.title-input {
+  flex: 1;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 1.125rem;
   font-weight: 600;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+}
+
+.language-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+}
+
+.embed-input {
+  width: 100%;
+  max-width: 700px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
 
@@ -668,6 +704,38 @@ export default Counter;`
   }
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.language-badge {
+  padding: 0.25rem 0.75rem;
+  background: var(--color-bg-tertiary);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+}
+
+.edit-mode-btn {
+  padding: 0.375rem 0.875rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-link-hover);
+  }
+}
+
 .add-doc-btn,
 .add-card-btn {
   display: flex;
@@ -694,6 +762,23 @@ export default Counter;`
   overflow-y: auto;
   padding: 1rem;
   position: relative;
+}
+
+.document-editor {
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  border: none;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  resize: none;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .document-content {
@@ -835,6 +920,11 @@ export default Counter;`
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-tertiary);
+
+  .line-info {
+    color: var(--color-accent);
+    font-family: monospace;
+  }
 }
 
 .card-actions {

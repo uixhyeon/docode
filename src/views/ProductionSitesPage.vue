@@ -30,7 +30,11 @@
             </div>
           </div>
         </router-link>
-        <button class="edit-title-btn" @click="startEditProject(project)">
+        <button
+          v-if="!project.isDefault"
+          class="edit-title-btn"
+          @click="startEditProject(project)"
+        >
           제목 수정
         </button>
       </div>
@@ -100,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useToast } from '../composables/useToast'
 import { auth } from '../firebase/config'
 import {
@@ -121,7 +125,26 @@ const editForm = ref({
 })
 
 const isLoading = ref(false)
-const projects = ref([])
+
+// 기본 프로젝트 (항상 표시)
+const DEFAULT_PROJECTS = [
+  {
+    id: 'code-archive',
+    name: '코드 아카이브',
+    icon: '📦',
+    description: '이 프로젝트의 제작 과정과 주요 기능 설명',
+    path: '/production-sites/code-archive',
+    isDefault: true
+  }
+]
+
+// Firebase에서 가져온 프로젝트
+const firebaseProjects = ref([])
+
+// 전체 프로젝트 목록 (기본 + Firebase)
+const projects = computed(() => {
+  return [...DEFAULT_PROJECTS, ...firebaseProjects.value]
+})
 
 // Firebase에서 프로젝트 목록 로드
 const loadProjects = async () => {
@@ -130,7 +153,7 @@ const loadProjects = async () => {
     if (!user) return
 
     const sites = await getProductionSites(user.uid)
-    projects.value = sites
+    firebaseProjects.value = sites
   } catch (err) {
     console.error('Load error:', err)
     error('프로젝트 목록을 불러오는데 실패했습니다.')
@@ -162,6 +185,12 @@ const addNewProject = () => {
 
 // 프로젝트 수정 시작
 const startEditProject = (project) => {
+  // 기본 프로젝트는 수정 불가
+  if (project.isDefault) {
+    warning('기본 프로젝트는 수정할 수 없습니다.')
+    return
+  }
+
   editingProject.value = { ...project }
   editForm.value = {
     name: project.name,
@@ -193,8 +222,9 @@ const saveProject = async () => {
       return
     }
 
-    // 중복 체크
-    const isDuplicate = projects.value.some(
+    // 중복 체크 (기본 프로젝트 포함)
+    const allProjects = [...DEFAULT_PROJECTS, ...firebaseProjects.value]
+    const isDuplicate = allProjects.some(
       p => p.id !== editingProject.value?.id && p.name.toLowerCase() === editForm.value.name.trim().toLowerCase()
     )
 
@@ -218,7 +248,7 @@ const saveProject = async () => {
         id: editingProject.value.id
       })
 
-      projects.value.push({
+      firebaseProjects.value.push({
         id: siteId,
         ...siteData,
         createdAt: new Date().toISOString()
@@ -228,10 +258,10 @@ const saveProject = async () => {
       // 기존 프로젝트 수정
       await updateProductionSite(user.uid, editingProject.value.id, siteData)
 
-      const index = projects.value.findIndex(p => p.id === editingProject.value.id)
+      const index = firebaseProjects.value.findIndex(p => p.id === editingProject.value.id)
       if (index !== -1) {
-        projects.value[index] = {
-          ...projects.value[index],
+        firebaseProjects.value[index] = {
+          ...firebaseProjects.value[index],
           ...siteData
         }
       }
@@ -258,15 +288,21 @@ const deleteProject = async () => {
       return
     }
 
-    const index = projects.value.findIndex(p => p.id === editingProject.value.id)
+    // 기본 프로젝트는 삭제 불가
+    if (editingProject.value.isDefault) {
+      warning('기본 프로젝트는 삭제할 수 없습니다.')
+      return
+    }
+
+    const index = firebaseProjects.value.findIndex(p => p.id === editingProject.value.id)
     if (index !== -1) {
-      const projectName = projects.value[index].name
+      const projectName = firebaseProjects.value[index].name
 
       // Firebase에서 삭제
       await deleteProductionSite(user.uid, editingProject.value.id)
 
       // 로컬 상태 업데이트
-      projects.value.splice(index, 1)
+      firebaseProjects.value.splice(index, 1)
       success(`"${projectName}" 프로젝트가 삭제되었습니다.`)
     }
 

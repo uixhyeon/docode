@@ -296,11 +296,23 @@ const cancelEdit = () => {
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1.25rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.25rem 1rem;
+  }
 }
 
 .page-header {
   margin-bottom: 3rem;
   text-align: center;
+
+  @media (max-width: 768px) {
+    margin-bottom: 2rem;
+  }
 }
 
 .page-title {
@@ -315,11 +327,24 @@ const cancelEdit = () => {
 
   @media (max-width: 768px) {
     font-size: 2rem;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.75rem;
   }
 }
 
 .page-icon {
   font-size: 3rem;
+
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
+  }
 }
 
 .page-description {
@@ -328,12 +353,25 @@ const cancelEdit = () => {
   line-height: 1.7;
   max-width: 700px;
   margin: 0 auto;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.9375rem;
+    padding: 0 0.5rem;
+  }
 }
 
 .categories {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    gap: 0.875rem;
+  }
 }
 
 .category-section {
@@ -346,6 +384,10 @@ const cancelEdit = () => {
   &:hover {
     border-color: #d1d5db;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  @media (max-width: 768px) {
+    border-radius: 8px;
   }
 }
 
@@ -392,16 +434,40 @@ const cancelEdit = () => {
   &.active {
     background: #f3f4f6;
   }
+
+  @media (max-width: 768px) {
+    padding: 1.25rem 1rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem 0.875rem;
+  }
 }
 
 .category-info {
   display: flex;
   align-items: center;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.625rem;
+  }
 }
 
 .category-icon {
   font-size: 1.75rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.375rem;
+  }
 }
 
 .category-name {
@@ -409,6 +475,14 @@ const cancelEdit = () => {
   font-weight: 700;
   color: #1f2937;
   margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 1.125rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
 }
 
 .item-count {
@@ -418,6 +492,16 @@ const cancelEdit = () => {
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    padding: 0.2rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.75rem;
+  }
 }
 
 .toggle-icon {
@@ -427,6 +511,11 @@ const cancelEdit = () => {
   &.rotated {
     transform: rotate(-180deg);
   }
+
+  @media (max-width: 480px) {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .category-items {
@@ -434,6 +523,17 @@ const cancelEdit = () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0.75rem;
+
+  @media (max-width: 768px) {
+    padding: 0 1rem 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.625rem;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    padding: 0 0.875rem 0.875rem;
+  }
 }
 
 .category-item {
@@ -450,18 +550,34 @@ const cancelEdit = () => {
     background: #f3f4f6;
     transform: translateX(4px);
   }
+
+  @media (max-width: 768px) {
+    padding: 0.625rem 0.875rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.5rem 0.75rem;
+  }
 }
 
 .item-dot {
   color: #087ea4;
   font-size: 1.25rem;
   font-weight: 700;
+
+  @media (max-width: 480px) {
+    font-size: 1.125rem;
+  }
 }
 
 .item-name {
   color: #374151;
   font-size: 0.9375rem;
   font-weight: 500;
+
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+  }
 }
 
 .expand-enter-active,

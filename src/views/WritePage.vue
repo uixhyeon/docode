@@ -590,6 +590,12 @@ onMounted(async () => {
   position: sticky;
   top: 0;
   z-index: 100;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
 }
 
 .header-left {
@@ -597,6 +603,14 @@ onMounted(async () => {
   align-items: center;
   gap: 1rem;
   flex: 1;
+  min-width: 0;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0.75rem;
+  }
 }
 
 .back-btn {
@@ -610,11 +624,20 @@ onMounted(async () => {
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
     background: var(--color-bg-tertiary);
     border-color: var(--color-accent);
     color: var(--color-text-primary);
+  }
+
+  @media (max-width: 480px) {
+    span {
+      display: none;
+    }
+    padding: 0.5rem;
   }
 }
 
@@ -623,12 +646,21 @@ onMounted(async () => {
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
+  min-width: 0;
 
   h1 {
     font-size: 0.875rem;
     color: var(--color-text-tertiary);
     margin: 0;
     font-weight: 500;
+
+    @media (max-width: 480px) {
+      font-size: 0.75rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
   }
 }
 
@@ -638,6 +670,13 @@ onMounted(async () => {
   gap: 0.75rem;
   width: 100%;
   max-width: 700px;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
 }
 
 .title-input {
@@ -649,10 +688,16 @@ onMounted(async () => {
   font-weight: 600;
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
+  min-width: 0;
 
   &:focus {
     outline: none;
     border-color: var(--color-accent);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    width: 100%;
   }
 }
 
@@ -664,10 +709,15 @@ onMounted(async () => {
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
   cursor: pointer;
+  flex-shrink: 0;
 
   &:focus {
     outline: none;
     border-color: var(--color-accent);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
   }
 }
 
@@ -685,6 +735,11 @@ onMounted(async () => {
     outline: none;
     border-color: var(--color-accent);
   }
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    font-size: 0.8125rem;
+  }
 }
 
 .save-btn {
@@ -699,11 +754,29 @@ onMounted(async () => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
     background: var(--color-link-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 96, 223, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+
+  @media (max-width: 480px) {
+    span {
+      display: none;
+    }
+    svg {
+      width: 20px;
+      height: 20px;
+    }
   }
 }
 
@@ -712,6 +785,12 @@ onMounted(async () => {
   flex: 1;
   height: calc(100vh - 80px);
   position: relative;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 140px);
+  }
 }
 
 .left-panel {
@@ -720,6 +799,13 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    min-height: 50vh;
+    max-height: 60vh;
+  }
 }
 
 .panel-header {
@@ -735,12 +821,24 @@ onMounted(async () => {
     color: var(--color-text-primary);
     margin: 0;
   }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+
+    h3 {
+      font-size: 0.9375rem;
+    }
+  }
 }
 
 .header-actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+  }
 }
 
 .language-badge {
@@ -751,6 +849,11 @@ onMounted(async () => {
   font-weight: 600;
   color: var(--color-accent);
   text-transform: uppercase;
+
+  @media (max-width: 480px) {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.6875rem;
+  }
 }
 
 .edit-mode-btn {
@@ -766,6 +869,11 @@ onMounted(async () => {
 
   &:hover {
     background: var(--color-link-hover);
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.3rem 0.625rem;
+    font-size: 0.6875rem;
   }
 }
 
@@ -788,6 +896,11 @@ onMounted(async () => {
     color: white;
     border-color: var(--color-accent);
   }
+
+  @media (max-width: 768px) {
+    font-size: 0.8125rem;
+    padding: 0.4rem 0.75rem;
+  }
 }
 
 .document-viewer {
@@ -795,6 +908,10 @@ onMounted(async () => {
   overflow-y: auto;
   padding: 1rem;
   position: relative;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 }
 
 .document-editor {
@@ -812,12 +929,21 @@ onMounted(async () => {
   &:focus {
     outline: none;
   }
+
+  @media (max-width: 768px) {
+    font-size: 0.8125rem;
+    padding: 0.75rem;
+  }
 }
 
 .document-content {
   font-family: 'Courier New', monospace;
   font-size: 0.875rem;
   line-height: 1.6;
+
+  @media (max-width: 768px) {
+    font-size: 0.8125rem;
+  }
 }
 
 .document-line {
@@ -838,6 +964,10 @@ onMounted(async () => {
     background: rgba(187, 128, 9, 0.3);
     animation: highlight-pulse 1s ease;
   }
+
+  @media (max-width: 768px) {
+    padding: 0.2rem 0.35rem;
+  }
 }
 
 @keyframes highlight-pulse {
@@ -852,12 +982,19 @@ onMounted(async () => {
   user-select: none;
   text-align: right;
   margin-right: 1rem;
+
+  @media (max-width: 768px) {
+    width: 30px;
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+  }
 }
 
 .line-content {
   flex: 1;
   color: var(--color-text-primary);
   font-family: 'Courier New', Consolas, 'Monaco', monospace;
+  word-break: break-word;
 }
 
 .extract-button {
@@ -882,6 +1019,12 @@ onMounted(async () => {
     background: var(--color-link-hover);
     transform: scale(1.05);
   }
+
+  @media (max-width: 768px) {
+    right: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+  }
 }
 
 .resize-handle {
@@ -893,6 +1036,10 @@ onMounted(async () => {
   &:hover {
     background: var(--color-accent);
   }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .right-panel {
@@ -901,6 +1048,10 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    min-height: 50vh;
+  }
 }
 
 .workspace {
@@ -908,6 +1059,10 @@ onMounted(async () => {
   padding: 2rem;
   overflow-y: auto;
   position: relative;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 }
 
 .connection-lines {
@@ -941,6 +1096,12 @@ onMounted(async () => {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     cursor: grabbing;
   }
+
+  @media (max-width: 768px) {
+    left: 1rem;
+    right: 1rem;
+    padding: 0.875rem;
+  }
 }
 
 .card-header {
@@ -958,6 +1119,10 @@ onMounted(async () => {
   .line-info {
     color: var(--color-accent);
     font-family: monospace;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.6875rem;
   }
 }
 
@@ -979,11 +1144,20 @@ onMounted(async () => {
   &:hover {
     opacity: 1;
   }
+
+  @media (max-width: 768px) {
+    font-size: 0.9375rem;
+    padding: 0.2rem;
+  }
 }
 
 .delete-btn {
   font-size: 1.5rem;
   color: #ef4444;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
 }
 
 .card-content {
@@ -1003,6 +1177,12 @@ onMounted(async () => {
       outline: none;
       border-color: var(--color-accent);
     }
+
+    @media (max-width: 768px) {
+      min-height: 100px;
+      padding: 0.625rem;
+      font-size: 0.875rem;
+    }
   }
 }
 
@@ -1020,5 +1200,10 @@ onMounted(async () => {
   height: 100%;
   color: var(--color-text-tertiary);
   font-size: 0.9375rem;
+
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+    padding: 2rem 1rem;
+  }
 }
 </style>

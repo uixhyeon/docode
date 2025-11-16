@@ -121,6 +121,14 @@ const categories = [
       { name: '참고 자료', path: '/others/references' },
       { name: '팁', path: '/others/tips' }
     ]
+  },
+  {
+    name: '제작 사이트',
+    icon: '🚀',
+    path: '/production-sites',
+    children: [
+      { name: '코드 아카이브', path: '/production-sites/code-archive' }
+    ]
   }
 ]
 

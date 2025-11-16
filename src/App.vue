@@ -17,6 +17,7 @@
     ></div>
 
     <WelcomeModal />
+    <Toast />
   </div>
 </template>
 
@@ -25,6 +26,7 @@ import { ref } from 'vue'
 import MDNHeader from './components/MDNHeader.vue'
 import MDNSidebar from './components/MDNSidebar.vue'
 import WelcomeModal from './components/WelcomeModal.vue'
+import Toast from './components/Toast.vue'
 
 const isSidebarOpen = ref(false)
 

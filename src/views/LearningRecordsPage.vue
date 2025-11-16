@@ -409,7 +409,7 @@ onMounted(() => {
 
 .content-layout {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 2rem;
 
   @media (max-width: 1024px) {
@@ -421,8 +421,8 @@ onMounted(() => {
 .calendar-section {
   background: white;
   border: 2px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: 12px;
+  padding: 1rem;
   height: fit-content;
   position: sticky;
   top: calc(var(--header-height) + 1rem);
@@ -433,11 +433,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .current-month {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
 }

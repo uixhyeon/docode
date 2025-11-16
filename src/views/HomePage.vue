@@ -24,7 +24,7 @@
 
     <div class="stats">
       <div class="stat-item">
-        <div class="stat-number">5</div>
+        <div class="stat-number">7</div>
         <div class="stat-label">대분류</div>
       </div>
       <div class="stat-item">
@@ -32,7 +32,7 @@
         <div class="stat-label">중분류</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">70+</div>
+        <div class="stat-number">80+</div>
         <div class="stat-label">소분류</div>
       </div>
     </div>
@@ -42,8 +42,22 @@
 <script setup>
 const categories = [
   {
-    name: '📚 과목/프레임워크',
+    name: '📚 학습 자료',
     icon: '📚',
+    path: '/learning-contents',
+    description: '각 주제별 개념, 주요 코드, 설명을 확인하고 학습하세요',
+    count: 15
+  },
+  {
+    name: '📝 학습 기록',
+    icon: '📝',
+    path: '/learning-records',
+    description: '날짜별로 학습 내용을 기록하고 관리하세요',
+    count: 0
+  },
+  {
+    name: '📖 과목/프레임워크',
+    icon: '📖',
     path: '/subjects',
     description: 'HTML, CSS, JavaScript, TypeScript, React, Vue, Firebase 등',
     count: 35

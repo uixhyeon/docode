@@ -223,3 +223,95 @@ export const deleteProductionSite = async (userId, siteId) => {
     throw error
   }
 }
+
+// ============ Learning Records CRUD ============
+
+// 특정 날짜의 학습기록 가져오기
+export const getLearningRecord = async (userId, dateKey) => {
+  try {
+    const recordRef = doc(db, `users/${userId}/learning-records/${dateKey}`)
+    const recordDoc = await getDoc(recordRef)
+
+    if (recordDoc.exists()) {
+      return { id: recordDoc.id, ...recordDoc.data() }
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error('Error getting learning record:', error)
+    return null
+  }
+}
+
+// 학습기록 저장
+export const saveLearningRecord = async (userId, dateKey, recordData) => {
+  try {
+    const recordRef = doc(db, `users/${userId}/learning-records/${dateKey}`)
+
+    await setDoc(recordRef, {
+      ...recordData,
+      dateKey,
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error saving learning record:', error)
+    throw error
+  }
+}
+
+// 특정 월의 모든 학습기록 가져오기
+export const getLearningRecordsByMonth = async (userId, year, month) => {
+  try {
+    const recordsRef = collection(db, `users/${userId}/learning-records`)
+    const startKey = `${year}-${String(month).padStart(2, '0')}-01`
+    const endKey = `${year}-${String(month).padStart(2, '0')}-31`
+
+    const q = query(
+      recordsRef,
+      where('dateKey', '>=', startKey),
+      where('dateKey', '<=', endKey)
+    )
+
+    const querySnapshot = await getDocs(q)
+    const records = {}
+
+    querySnapshot.docs.forEach(doc => {
+      const data = doc.data()
+      records[doc.id] = data
+    })
+
+    return records
+  } catch (error) {
+    console.error('Error getting learning records by month:', error)
+    return {}
+  }
+}
+
+// 모든 학습기록 가져오기 (날짜 범위로 필터링)
+export const getLearningRecordsByDateRange = async (userId, startDate, endDate) => {
+  try {
+    const recordsRef = collection(db, `users/${userId}/learning-records`)
+
+    const q = query(
+      recordsRef,
+      where('dateKey', '>=', startDate),
+      where('dateKey', '<=', endDate),
+      orderBy('dateKey', 'asc')
+    )
+
+    const querySnapshot = await getDocs(q)
+    const records = {}
+
+    querySnapshot.docs.forEach(doc => {
+      const data = doc.data()
+      records[doc.id] = data
+    })
+
+    return records
+  } catch (error) {
+    console.error('Error getting learning records by date range:', error)
+    return {}
+  }
+}

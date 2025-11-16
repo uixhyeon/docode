@@ -715,8 +715,8 @@ onMounted(async () => {
 }
 
 .left-panel {
-  background: #0d1117;
-  border-right: 1px solid #30363d;
+  background: var(--color-bg-primary);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -827,7 +827,7 @@ onMounted(async () => {
   transition: background 0.1s;
 
   &:hover {
-    background: #161b22;
+    background: var(--color-bg-tertiary);
   }
 
   &.selected {
@@ -848,7 +848,7 @@ onMounted(async () => {
 .line-number {
   display: inline-block;
   width: 40px;
-  color: #6e7681;
+  color: var(--color-text-tertiary);
   user-select: none;
   text-align: right;
   margin-right: 1rem;
@@ -856,7 +856,7 @@ onMounted(async () => {
 
 .line-content {
   flex: 1;
-  color: #c9d1d9;
+  color: var(--color-text-primary);
   font-family: 'Courier New', Consolas, 'Monaco', monospace;
 }
 

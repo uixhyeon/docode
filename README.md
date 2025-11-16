@@ -74,8 +74,13 @@ npm run preview
 
 ### 로그인 정보
 
+계정 1:
 - **아이디**: `uixhyeon`
 - **비밀번호**: `uixhyeon`
+
+계정 2:
+- **아이디**: `a`
+- **비밀번호**: `aaaaaa`
 
 ### Firebase 배포
 
@@ -162,7 +167,8 @@ users/{userId}/articles/{articleId}
 
 최초 1회만 실행 필요:
 - `/signup` 페이지 접속
-- "사용자 생성" 버튼 클릭
+- 원하는 계정의 "생성" 버튼 클릭
+  - `uixhyeon` 계정 또는 `a` 계정 선택 가능
 
 ### 2. 글 작성
 

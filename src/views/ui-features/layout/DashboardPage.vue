@@ -18,12 +18,27 @@
                   <h3>{{ topic.title }}</h3>
                   <p>{{ topic.description }}</p>
                 </div>
-                <button class="write-btn" @click="goToWrite(topic.id, topic.title)">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
-                  <span>글쓰기</span>
-                </button>
+                <div class="button-group">
+
+                  <button class="write-btn" @click="goToWrite(topic.id, topic.title)">
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+
+                    </svg>
+
+                    <span>글쓰기</span>
+
+                  </button>
+
+                  <button class="edit-title-btn" @click="startEditTopic(topic)">
+
+                    제목 수정
+
+                  </button>
+
+                </div>
               </div>
             </div>
 
@@ -42,14 +57,58 @@
                 <p class="article-preview">{{ article.preview }}</p>
               </div>
             </div>
+
+          <!-- 새 컨텐츠 추가 버튼 -->
+          <button class="add-content-btn" @click="addNewTopic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>새 컨텐츠 추가</span>
+          </button>
           </div>
         </div>
       </section>
+    </div>
+
+    <!-- 제목 수정 모달 -->
+    <div v-if="editingTopic" class="modal-overlay" @click="cancelEdit">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>컨텐츠 수정</h3>
+          <button class="close-btn" @click="cancelEdit">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>제목</label>
+            <input
+              v-model="editForm.title"
+              type="text"
+              placeholder="제목을 입력하세요"
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <label>설명</label>
+            <textarea
+              v-model="editForm.description"
+              placeholder="설명을 입력하세요"
+              class="form-textarea"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="cancelEdit">취소</button>
+          <button class="btn-delete" @click="deleteTopic" v-if="!editingTopic.isNew">삭제</button>
+          <button class="btn-save" @click="saveTopic">저장</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import TabNavigation from '../../../components/TabNavigation.vue'
 import { useArticles } from '../../../composables/useArticles'
@@ -64,7 +123,7 @@ const tabs = [
   { name: 'Modal', path: '/ui-features/layout/modal', icon: '🪟' },
 ]
 
-const topics = [
+const topics = ref([
   {
     id: 'sidebar-navigation',
     title: 'Sidebar Navigation',
@@ -95,7 +154,7 @@ const topics = [
     title: '데이터 시각화',
     description: 'Chart와 Graph 통합'
   }
-]
+])
 
 // 글쓰기 페이지로 이동
 const goToWrite = (topicId, topicTitle) => {
@@ -128,6 +187,85 @@ const formatDate = (dateString) => {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}.${month}.${day}`
+}
+
+
+// 토픽 편집 관련
+const editingTopic = ref(null)
+const editForm = ref({
+  title: '',
+  description: ''
+})
+
+// 새 컨텐츠 추가
+const addNewTopic = () => {
+  const newTopic = {
+    id: 'topic-' + Date.now(),
+    title: '',
+    description: '',
+    isNew: true
+  }
+  editingTopic.value = newTopic
+  editForm.value = {
+    title: '',
+    description: ''
+  }
+}
+
+// 토픽 수정 시작
+const startEditTopic = (topic) => {
+  editingTopic.value = { ...topic }
+  editForm.value = {
+    title: topic.title,
+    description: topic.description
+  }
+}
+
+// 토픽 저장
+const saveTopic = () => {
+  if (!editForm.value.title.trim()) {
+    alert('제목을 입력해주세요.')
+    return
+  }
+
+  if (editingTopic.value.isNew) {
+    // 새 토픽 추가
+    topics.value.push({
+      id: editingTopic.value.id,
+      title: editForm.value.title,
+      description: editForm.value.description
+    })
+  } else {
+    // 기존 토픽 수정
+    const index = topics.value.findIndex(t => t.id === editingTopic.value.id)
+    if (index !== -1) {
+      topics.value[index].title = editForm.value.title
+      topics.value[index].description = editForm.value.description
+    }
+  }
+
+  cancelEdit()
+}
+
+// 토픽 삭제
+const deleteTopic = () => {
+  if (!confirm('이 컨텐츠를 삭제하시겠습니까?')) return
+
+  const index = topics.value.findIndex(t => t.id === editingTopic.value.id)
+  if (index !== -1) {
+    topics.value.splice(index, 1)
+  }
+
+  cancelEdit()
+}
+
+// 편집 취소
+const cancelEdit = () => {
+  editingTopic.value = null
+  editForm.value = {
+    title: '',
+    description: ''
+  }
 }
 </script>
 
@@ -224,6 +362,15 @@ const formatDate = (dateString) => {
   }
 }
 
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
 .write-btn {
   display: flex;
   align-items: center;
@@ -253,6 +400,21 @@ const formatDate = (dateString) => {
     span {
       display: none;
     }
+  }
+}
+
+.edit-title-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--color-text-secondary);
+    text-decoration: underline;
   }
 }
 
@@ -309,4 +471,191 @@ const formatDate = (dateString) => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.add-content-btn {
+  width: 100%;
+  padding: 1.5rem;
+  background: var(--color-bg-secondary);
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-tertiary);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:hover {
+    background: var(--color-bg-primary);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// 모달 스타일
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(0, 96, 223, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--color-text-tertiary);
+  }
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn-cancel,
+.btn-delete,
+.btn-save {
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+
+  &:hover {
+    background: var(--color-border);
+  }
+}
+
+.btn-delete {
+  background: #fee;
+  color: #d73a49;
+  margin-right: auto;
+
+  &:hover {
+    background: #fdd;
+  }
+}
+
+.btn-save {
+  background: var(--color-accent);
+  color: white;
+
+  &:hover {
+    background: var(--color-link-hover);
+    box-shadow: 0 4px 8px rgba(0, 96, 223, 0.3);
+  }
+}
+
 </style>

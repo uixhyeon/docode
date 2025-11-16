@@ -139,11 +139,28 @@ const handleStart = () => {
   justify-content: space-between;
   gap: 1rem;
 
+  @media (max-width: 480px) {
+    padding: 1.5rem 1rem 1rem;
+    gap: 0.5rem;
+  }
+
   h2 {
     margin: 0;
     font-size: 1.5rem;
     color: #1f2937;
     line-height: 1.4;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: keep-all;
+
+    @media (max-width: 480px) {
+      font-size: 1.125rem;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
   }
 }
 
@@ -159,16 +176,33 @@ const handleStart = () => {
   border-radius: 6px;
   transition: all 0.2s;
   flex-shrink: 0;
+  min-width: 32px;
+  min-height: 32px;
+
+  @media (max-width: 480px) {
+    background-color: #f3f4f6;
+    color: #1f2937;
+    min-width: 36px;
+    min-height: 36px;
+  }
 
   &:hover {
     background-color: #f3f4f6;
     color: #1f2937;
+  }
+
+  &:active {
+    background-color: #e5e7eb;
   }
 }
 
 .modal-body {
   padding: 2rem;
   text-align: center;
+
+  @media (max-width: 480px) {
+    padding: 1.5rem 1rem;
+  }
 }
 
 .welcome-icon {

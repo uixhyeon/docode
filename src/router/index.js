@@ -4,6 +4,7 @@ import HomePage from '../views/HomePage.vue'
 import LoginPage from '../views/LoginPage.vue'
 import SignupPage from '../views/SignupPage.vue'
 import LearningRecordsPage from '../views/LearningRecordsPage.vue'
+import LearningContentsPage from '../views/LearningContentsPage.vue'
 
 // 과목/프레임워크 - React
 import ReactHooksPage from '../views/subjects/react/HooksPage.vue'
@@ -130,6 +131,11 @@ const routes = [
     path: '/learning-records',
     name: 'LearningRecords',
     component: LearningRecordsPage
+  },
+  {
+    path: '/learning-contents',
+    name: 'LearningContents',
+    component: LearningContentsPage
   },
 
   // 과목/프레임워크 - React

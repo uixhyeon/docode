@@ -473,12 +473,16 @@ const highlightSyntax = (code, language = 'javascript') => {
 
 // 저장하기
 const saveArticle = async () => {
+  console.log('=== 저장 시작 ===')
+
   if (!articleTitle.value.trim()) {
     alert('글 제목을 입력해주세요.')
     return
   }
 
   const user = auth.currentUser
+  console.log('현재 사용자:', user)
+
   if (!user) {
     alert('로그인이 필요합니다.')
     return
@@ -499,20 +503,29 @@ const saveArticle = async () => {
       preview: cards.value[0]?.content.substring(0, 100) || '내용 없음'
     }
 
+    console.log('저장할 데이터:', articleData)
+    console.log('사용자 ID:', user.uid)
+
     if (isEditMode.value && editingArticleId.value) {
       // 수정 모드
+      console.log('수정 모드 - 아티클 ID:', editingArticleId.value)
       await updateArticle(user.uid, editingArticleId.value, articleData)
+      console.log('수정 완료!')
       alert('수정되었습니다!')
     } else {
       // 새 글 작성
-      await saveToFirestore(user.uid, articleData)
+      console.log('새 글 작성 모드')
+      const articleId = await saveToFirestore(user.uid, articleData)
+      console.log('저장 완료! 생성된 ID:', articleId)
       alert('저장되었습니다!')
     }
 
     router.back()
   } catch (error) {
-    console.error('Failed to save article:', error)
-    alert('저장에 실패했습니다.')
+    console.error('저장 실패 - 에러 상세:', error)
+    console.error('에러 메시지:', error.message)
+    console.error('에러 코드:', error.code)
+    alert(`저장에 실패했습니다.\n에러: ${error.message || error}`)
   }
 }
 

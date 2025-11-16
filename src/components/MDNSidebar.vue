@@ -80,6 +80,12 @@ const expandedCategories = ref(new Set(['/subjects']))
 
 const categories = [
   {
+    name: '학습 기록',
+    icon: '📅',
+    path: '/learning-records',
+    children: []
+  },
+  {
     name: '과목/프레임워크',
     icon: '📚',
     path: '/subjects',
@@ -127,7 +133,11 @@ const categories = [
     icon: '🚀',
     path: '/production-sites',
     children: [
-      { name: '코드 아카이브', path: '/production-sites/code-archive' }
+      { name: '코드 아카이브', path: '/production-sites/code-archive' },
+      { name: '텐바이텐', path: '/production-sites/tenbyten' },
+      { name: '클론 코딩', path: '/production-sites/clonecoding' },
+      { name: '국정공원', path: '/production-sites/gukjungpark' },
+      { name: '마타주', path: '/production-sites/mataju' }
     ]
   }
 ]

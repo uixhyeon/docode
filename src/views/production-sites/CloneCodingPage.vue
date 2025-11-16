@@ -377,8 +377,6 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@import './CodeArchivePage.vue';
-
 .clonecoding-page {
   min-height: 100vh;
   background: var(--color-bg-secondary);

@@ -30,301 +30,52 @@
             </div>
           </div>
         </router-link>
-        <button
-          v-if="!project.isDefault"
-          class="edit-title-btn"
-          @click="startEditProject(project)"
-        >
-          제목 수정
-        </button>
-      </div>
-
-      <!-- 새 프로젝트 추가 버튼 -->
-      <button class="add-project-btn" @click="addNewProject">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        <span>새 프로젝트 추가</span>
-      </button>
-    </div>
-
-    <!-- 제목 수정 모달 -->
-    <div v-if="editingProject" class="modal-overlay" @click="cancelEdit">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>프로젝트 수정</h3>
-          <button class="close-btn" @click="cancelEdit">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>아이콘</label>
-            <input
-              v-model="editForm.icon"
-              type="text"
-              placeholder="이모지를 입력하세요"
-              class="form-input"
-            />
-          </div>
-          <div class="form-group">
-            <label>프로젝트 이름</label>
-            <input
-              v-model="editForm.name"
-              type="text"
-              placeholder="프로젝트 이름을 입력하세요"
-              class="form-input"
-            />
-          </div>
-          <div class="form-group">
-            <label>설명</label>
-            <textarea
-              v-model="editForm.description"
-              placeholder="프로젝트 설명을 입력하세요"
-              class="form-textarea"
-              rows="3"
-            ></textarea>
-          </div>
-          <div class="form-group">
-            <label>경로</label>
-            <input
-              v-model="editForm.path"
-              type="text"
-              placeholder="/production-sites/project-name"
-              class="form-input"
-            />
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-cancel" @click="cancelEdit">취소</button>
-          <button class="btn-delete" @click="deleteProject" v-if="!editingProject.isNew">삭제</button>
-          <button class="btn-save" @click="saveProject">저장</button>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useToast } from '../composables/useToast'
-import { auth } from '../firebase/config'
-import {
-  getProductionSites,
-  saveProductionSite,
-  updateProductionSite,
-  deleteProductionSite
-} from '../firebase/firestore'
+import { ref } from 'vue'
 
-const { success, error, warning } = useToast()
-
-const editingProject = ref(null)
-const editForm = ref({
-  name: '',
-  icon: '',
-  description: '',
-  path: ''
-})
-
-const isLoading = ref(false)
-
-// 기본 프로젝트 (항상 표시)
-const DEFAULT_PROJECTS = [
+// 정적 프로젝트 목록
+const projects = ref([
   {
     id: 'code-archive',
     name: '코드 아카이브',
     icon: '📦',
-    description: '이 프로젝트의 제작 과정과 주요 기능 설명',
-    path: '/production-sites/code-archive',
-    isDefault: true
+    description: '개발자를 위한 코드 스니펫 및 학습 노트 관리 애플리케이션',
+    path: '/production-sites/code-archive'
+  },
+  {
+    id: 'tenbyten',
+    name: '텐바이텐',
+    icon: '🛒',
+    description: '온라인 디자인 문구 쇼핑몰 클론 프로젝트',
+    path: '/production-sites/tenbyten'
+  },
+  {
+    id: 'clonecoding',
+    name: '클론코딩',
+    icon: '💻',
+    description: '다양한 웹사이트 클론코딩 프로젝트 모음',
+    path: '/production-sites/clonecoding'
+  },
+  {
+    id: 'gukjungpark',
+    name: '국중박 리뉴얼',
+    icon: '🎭',
+    description: '국립중앙박물관 웹사이트 리뉴얼 프로젝트',
+    path: '/production-sites/gukjungpark'
+  },
+  {
+    id: 'mataju',
+    name: '마타주 짐배송',
+    icon: '📦',
+    description: '편리한 짐 배송 서비스 플랫폼',
+    path: '/production-sites/mataju'
   }
-]
-
-// Firebase에서 가져온 프로젝트
-const firebaseProjects = ref([])
-
-// 전체 프로젝트 목록 (기본 + Firebase)
-const projects = computed(() => {
-  return [...DEFAULT_PROJECTS, ...firebaseProjects.value]
-})
-
-// Firebase에서 프로젝트 목록 로드
-const loadProjects = async () => {
-  try {
-    const user = auth.currentUser
-    if (!user) return
-
-    const sites = await getProductionSites(user.uid)
-    firebaseProjects.value = sites
-  } catch (err) {
-    console.error('Load error:', err)
-    error('프로젝트 목록을 불러오는데 실패했습니다.')
-  }
-}
-
-onMounted(() => {
-  loadProjects()
-})
-
-// 새 프로젝트 추가
-const addNewProject = () => {
-  const newProject = {
-    id: 'project-' + Date.now(),
-    name: '',
-    icon: '📁',
-    description: '',
-    path: '',
-    isNew: true
-  }
-  editingProject.value = newProject
-  editForm.value = {
-    name: '',
-    icon: '📁',
-    description: '',
-    path: '/production-sites/'
-  }
-}
-
-// 프로젝트 수정 시작
-const startEditProject = (project) => {
-  // 기본 프로젝트는 수정 불가
-  if (project.isDefault) {
-    warning('기본 프로젝트는 수정할 수 없습니다.')
-    return
-  }
-
-  editingProject.value = { ...project }
-  editForm.value = {
-    name: project.name,
-    icon: project.icon,
-    description: project.description,
-    path: project.path
-  }
-}
-
-// 프로젝트 저장
-const saveProject = async () => {
-  try {
-    isLoading.value = true
-
-    const user = auth.currentUser
-    if (!user) {
-      warning('로그인이 필요합니다.')
-      return
-    }
-
-    // 검증
-    if (!editForm.value.name.trim()) {
-      warning('프로젝트 이름을 입력해주세요.')
-      return
-    }
-
-    if (editForm.value.name.trim().length > 50) {
-      warning('프로젝트 이름은 50자를 초과할 수 없습니다.')
-      return
-    }
-
-    // 중복 체크 (기본 프로젝트 포함)
-    const allProjects = [...DEFAULT_PROJECTS, ...firebaseProjects.value]
-    const isDuplicate = allProjects.some(
-      p => p.id !== editingProject.value?.id && p.name.toLowerCase() === editForm.value.name.trim().toLowerCase()
-    )
-
-    if (isDuplicate) {
-      warning('이미 존재하는 프로젝트 이름입니다.')
-      return
-    }
-
-    const siteData = {
-      name: editForm.value.name.trim(),
-      icon: editForm.value.icon.trim() || '📁',
-      description: editForm.value.description.trim(),
-      path: editForm.value.path.trim(),
-      sections: []
-    }
-
-    if (editingProject.value.isNew) {
-      // 새 프로젝트 저장
-      const siteId = await saveProductionSite(user.uid, {
-        ...siteData,
-        id: editingProject.value.id
-      })
-
-      firebaseProjects.value.push({
-        id: siteId,
-        ...siteData,
-        createdAt: new Date().toISOString()
-      })
-      success('프로젝트가 추가되었습니다.')
-    } else {
-      // 기존 프로젝트 수정
-      await updateProductionSite(user.uid, editingProject.value.id, siteData)
-
-      const index = firebaseProjects.value.findIndex(p => p.id === editingProject.value.id)
-      if (index !== -1) {
-        firebaseProjects.value[index] = {
-          ...firebaseProjects.value[index],
-          ...siteData
-        }
-      }
-      success('프로젝트가 수정되었습니다.')
-    }
-
-    cancelEdit()
-  } catch (err) {
-    console.error('Save error:', err)
-    error('저장 중 오류가 발생했습니다.')
-  } finally {
-    isLoading.value = false
-  }
-}
-
-// 프로젝트 삭제
-const deleteProject = async () => {
-  try {
-    isLoading.value = true
-
-    const user = auth.currentUser
-    if (!user) {
-      warning('로그인이 필요합니다.')
-      return
-    }
-
-    // 기본 프로젝트는 삭제 불가
-    if (editingProject.value.isDefault) {
-      warning('기본 프로젝트는 삭제할 수 없습니다.')
-      return
-    }
-
-    const index = firebaseProjects.value.findIndex(p => p.id === editingProject.value.id)
-    if (index !== -1) {
-      const projectName = firebaseProjects.value[index].name
-
-      // Firebase에서 삭제
-      await deleteProductionSite(user.uid, editingProject.value.id)
-
-      // 로컬 상태 업데이트
-      firebaseProjects.value.splice(index, 1)
-      success(`"${projectName}" 프로젝트가 삭제되었습니다.`)
-    }
-
-    cancelEdit()
-  } catch (err) {
-    console.error('Delete error:', err)
-    error('삭제 중 오류가 발생했습니다.')
-  } finally {
-    isLoading.value = false
-  }
-}
-
-// 편집 취소
-const cancelEdit = () => {
-  editingProject.value = null
-  editForm.value = {
-    name: '',
-    icon: '',
-    description: '',
-    path: ''
-  }
-}
+])
 </script>
 
 <style lang="scss" scoped>
@@ -423,210 +174,5 @@ const cancelEdit = () => {
   color: #6b7280;
   padding-left: 2.75rem;
   line-height: 1.6;
-}
-
-.edit-title-btn {
-  background: none;
-  border: none;
-  color: #9ca3af;
-  font-size: 0.8125rem;
-  padding: 0.5rem 1.5rem;
-  cursor: pointer;
-  text-align: right;
-  transition: color 0.2s;
-  display: block;
-  width: 100%;
-
-  &:hover {
-    color: #6b7280;
-    text-decoration: underline;
-  }
-}
-
-.add-project-btn {
-  width: 100%;
-  padding: 1.5rem;
-  background: white;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  color: #9ca3af;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-
-  &:hover {
-    background: #f9fafb;
-    border-color: #087ea4;
-    color: #087ea4;
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
-}
-
-// 모달 스타일
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
-  }
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s;
-
-  &:hover {
-    background: #f3f4f6;
-    color: #1f2937;
-  }
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #6b7280;
-  }
-}
-
-.form-input,
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.9375rem;
-  font-family: inherit;
-  background: white;
-  color: #1f2937;
-  transition: all 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: #087ea4;
-    box-shadow: 0 0 0 3px rgba(8, 126, 164, 0.1);
-  }
-
-  &::placeholder {
-    color: #9ca3af;
-  }
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 80px;
-  line-height: 1.6;
-}
-
-.modal-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-.btn-cancel,
-.btn-delete,
-.btn-save {
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-cancel {
-  background: #f3f4f6;
-  color: #6b7280;
-
-  &:hover {
-    background: #e5e7eb;
-  }
-}
-
-.btn-delete {
-  background: #fee;
-  color: #d73a49;
-  margin-right: auto;
-
-  &:hover {
-    background: #fdd;
-  }
-}
-
-.btn-save {
-  background: #087ea4;
-  color: white;
-
-  &:hover {
-    background: #0c5f7a;
-    box-shadow: 0 4px 8px rgba(8, 126, 164, 0.3);
-  }
 }
 </style>

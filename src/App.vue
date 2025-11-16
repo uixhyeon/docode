@@ -16,8 +16,6 @@
       @click="closeSidebar"
     ></div>
 
-    <WelcomeModal />
-
     <!-- Toast 알림 -->
     <Toast
       :isVisible="toastState.isVisible"
@@ -31,7 +29,6 @@
 import { ref } from 'vue'
 import MDNHeader from './components/MDNHeader.vue'
 import MDNSidebar from './components/MDNSidebar.vue'
-import WelcomeModal from './components/WelcomeModal.vue'
 import Toast from './components/Toast.vue'
 import { useToast } from './composables/useToast'
 

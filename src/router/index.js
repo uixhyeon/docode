@@ -102,6 +102,10 @@ import ArticlePage from '../views/ArticlePage.vue'
 import ProductionSitesPage from '../views/ProductionSitesPage.vue'
 import ProjectDetailPage from '../views/production-sites/ProjectDetailPage.vue'
 import CodeArchivePage from '../views/production-sites/CodeArchivePage.vue'
+import TenbytenPage from '../views/production-sites/TenbytenPage.vue'
+import CloneCodingPage from '../views/production-sites/CloneCodingPage.vue'
+import GukjungparkPage from '../views/production-sites/GukjungparkPage.vue'
+import MatajuPage from '../views/production-sites/MatajuPage.vue'
 
 const routes = [
   {
@@ -531,14 +535,34 @@ const routes = [
     component: ProductionSitesPage
   },
   {
-    path: '/production-sites/:id',
-    name: 'ProjectDetail',
-    component: ProjectDetailPage
-  },
-  {
     path: '/production-sites/code-archive',
     name: 'CodeArchive',
     component: CodeArchivePage
+  },
+  {
+    path: '/production-sites/tenbyten',
+    name: 'Tenbyten',
+    component: TenbytenPage
+  },
+  {
+    path: '/production-sites/clonecoding',
+    name: 'CloneCoding',
+    component: CloneCodingPage
+  },
+  {
+    path: '/production-sites/gukjungpark',
+    name: 'Gukjungpark',
+    component: GukjungparkPage
+  },
+  {
+    path: '/production-sites/mataju',
+    name: 'Mataju',
+    component: MatajuPage
+  },
+  {
+    path: '/production-sites/:id',
+    name: 'ProjectDetail',
+    component: ProjectDetailPage
   }
 ]
 

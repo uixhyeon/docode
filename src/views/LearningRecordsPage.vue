@@ -21,6 +21,9 @@
             </svg>
           </button>
         </div>
+        <button class="today-btn" @click="goToToday">
+          📅 오늘
+        </button>
 
         <div class="calendar">
           <div class="weekdays">
@@ -39,7 +42,9 @@
               ]"
               @click="day && selectDate(day)"
             >
-              <span v-if="day">{{ day }}</span>
+              <span v-if="day">
+                <span v-if="isSelectedWeek(day)" class="date-marker">-</span>{{ day }}
+              </span>
             </div>
           </div>
         </div>
@@ -64,30 +69,43 @@
               <h4 class="day-title">
                 {{ dayRecord.date.month }}월 {{ dayRecord.date.day }}일 ({{ weekdays[dayRecord.date.weekday] }})
               </h4>
-              <button
-                v-if="!dayRecord.isEditing"
-                class="edit-btn"
-                @click="startEdit(index)"
-              >
-                편집
-              </button>
-              <div v-else class="edit-actions">
+              <div v-if="!dayRecord.isEditing && !dayRecord.isQuickMemo" class="header-actions">
+                <button class="quick-memo-btn" @click="startQuickMemo(index)">
+                  ✏️ 빠른메모
+                </button>
+                <button class="edit-btn" @click="startEdit(index)">
+                  편집
+                </button>
+              </div>
+              <div v-else-if="dayRecord.isEditing || dayRecord.isQuickMemo" class="edit-actions">
                 <button class="save-btn" @click="saveEdit(index)">저장</button>
                 <button class="cancel-btn" @click="cancelEdit(index)">취소</button>
               </div>
             </div>
 
-            <div v-if="!dayRecord.isEditing" class="day-content">
+            <div v-if="!dayRecord.isEditing && !dayRecord.isQuickMemo" class="day-content">
               <div v-if="dayRecord.title || dayRecord.content" class="record-view">
                 <h5 v-if="dayRecord.title" class="record-title">{{ dayRecord.title }}</h5>
                 <div v-if="dayRecord.content" class="record-content markdown-body" v-html="renderMarkdown(dayRecord.content)"></div>
               </div>
               <div v-else class="empty-state">
-                <p>기록이 없습니다. 편집 버튼을 눌러 내용을 추가하세요.</p>
+                <p>기록이 없습니다. 빠른메모 또는 편집 버튼을 눌러 내용을 추가하세요.</p>
               </div>
             </div>
 
-            <div v-else class="day-edit">
+            <!-- 빠른 메모 모드 -->
+            <div v-else-if="dayRecord.isQuickMemo" class="day-edit quick-memo-mode">
+              <textarea
+                v-model="dayRecord.editContent"
+                class="content-input quick-memo-input"
+                placeholder="간단한 메모를 입력하세요..."
+                rows="6"
+                autofocus
+              ></textarea>
+            </div>
+
+            <!-- 전체 편집 모드 -->
+            <div v-else-if="dayRecord.isEditing" class="day-edit">
               <input
                 v-model="dayRecord.editTitle"
                 type="text"
@@ -267,7 +285,8 @@ const selectDate = (day) => {
       content: record.content || '',
       editTitle: record.title || '',
       editContent: record.content || '',
-      isEditing: false
+      isEditing: false,
+      isQuickMemo: false
     })
   }
 }
@@ -275,7 +294,16 @@ const selectDate = (day) => {
 // 편집 시작
 const startEdit = (index) => {
   weekRecords.value[index].isEditing = true
+  weekRecords.value[index].isQuickMemo = false
   weekRecords.value[index].editTitle = weekRecords.value[index].title
+  weekRecords.value[index].editContent = weekRecords.value[index].content
+}
+
+// 빠른 메모 시작
+const startQuickMemo = (index) => {
+  weekRecords.value[index].isQuickMemo = true
+  weekRecords.value[index].isEditing = false
+  weekRecords.value[index].editTitle = ''
   weekRecords.value[index].editContent = weekRecords.value[index].content
 }
 
@@ -284,9 +312,17 @@ const saveEdit = async (index) => {
   const record = weekRecords.value[index]
   const key = getDateKey(record.date.year, record.date.month, record.date.day)
 
-  record.title = record.editTitle
-  record.content = record.editContent
+  // 빠른 메모 모드일 때는 제목을 저장하지 않음
+  if (record.isQuickMemo) {
+    record.title = ''
+    record.content = record.editContent
+  } else {
+    record.title = record.editTitle
+    record.content = record.editContent
+  }
+
   record.isEditing = false
+  record.isQuickMemo = false
 
   // 파이어베이스에 저장
   const user = auth.currentUser
@@ -314,6 +350,7 @@ const saveEdit = async (index) => {
 // 편집 취소
 const cancelEdit = (index) => {
   weekRecords.value[index].isEditing = false
+  weekRecords.value[index].isQuickMemo = false
   weekRecords.value[index].editTitle = weekRecords.value[index].title
   weekRecords.value[index].editContent = weekRecords.value[index].content
 }
@@ -336,6 +373,14 @@ const nextMonth = () => {
   } else {
     currentMonth.value++
   }
+}
+
+// 오늘로 이동
+const goToToday = () => {
+  const today = new Date()
+  currentYear.value = today.getFullYear()
+  currentMonth.value = today.getMonth() + 1
+  selectDate(today.getDate())
 }
 
 // 마크다운 렌더링
@@ -409,7 +454,7 @@ onMounted(() => {
 
 .content-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 213px 1fr;
   gap: 2rem;
 
   @media (max-width: 1024px) {
@@ -433,7 +478,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .current-month {
@@ -454,6 +499,28 @@ onMounted(() => {
   &:hover {
     background: #f3f4f6;
     color: #1f2937;
+  }
+}
+
+.today-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: #087ea4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+
+  &:hover {
+    background: #0c5f7a;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
@@ -507,7 +574,7 @@ onMounted(() => {
     }
 
     &.selected {
-      background: #e0f2f1;
+      background: #f0f9f8;
       color: #087ea4;
       font-weight: 700;
     }
@@ -524,6 +591,12 @@ onMounted(() => {
 
     &.today.has-record::after {
       background: white;
+    }
+
+    .date-marker {
+      font-weight: 700;
+      margin-right: 2px;
+      opacity: 0.7;
     }
   }
 }
@@ -579,13 +652,28 @@ onMounted(() => {
   color: #1f2937;
 }
 
-.edit-btn, .save-btn, .cancel-btn {
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn, .save-btn, .cancel-btn, .quick-memo-btn {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.quick-memo-btn {
+  background: #10b981;
+  color: white;
+
+  &:hover {
+    background: #059669;
+  }
 }
 
 .edit-btn {
@@ -671,6 +759,19 @@ onMounted(() => {
     &:focus {
       outline: none;
       border-color: #087ea4;
+    }
+  }
+
+  &.quick-memo-mode {
+    .quick-memo-input {
+      border-color: #10b981;
+      font-family: inherit;
+      font-size: 1rem;
+
+      &:focus {
+        border-color: #059669;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+      }
     }
   }
 

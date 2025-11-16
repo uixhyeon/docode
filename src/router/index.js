@@ -525,18 +525,39 @@ const router = createRouter({
   routes
 })
 
+// Firebase Auth 상태 초기화 대기
+let authReady = false
+auth.onAuthStateChanged(() => {
+  authReady = true
+})
+
 // 인증 가드
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  // Auth 상태 초기화 대기
+  if (!authReady) {
+    await new Promise(resolve => {
+      const unsubscribe = auth.onAuthStateChanged(() => {
+        unsubscribe()
+        resolve()
+      })
+    })
+  }
+
   const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
   const user = auth.currentUser
 
+  console.log('[Router Guard] Path:', to.path, 'User:', user ? user.email : 'not logged in')
+
   // 로그인, 회원가입 페이지가 아니면 모두 인증 필요
   if (to.path !== '/login' && to.path !== '/signup' && !user) {
+    console.log('[Router Guard] Redirecting to /login - no user')
     next('/login')
   } else if (requiresGuest && user) {
     // 로그인 페이지인데 이미 로그인한 경우
+    console.log('[Router Guard] Redirecting to / - already logged in')
     next('/')
   } else {
+    console.log('[Router Guard] Allowing navigation')
     next()
   }
 })

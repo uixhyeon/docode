@@ -42,9 +42,7 @@
               ]"
               @click="day && selectDate(day)"
             >
-              <span v-if="day">
-                <span v-if="isSelectedWeek(day)" class="date-marker">-</span>{{ day }}
-              </span>
+              <span v-if="day">{{ day }}</span>
             </div>
           </div>
         </div>
@@ -534,10 +532,10 @@ onMounted(() => {
 
   .weekday {
     text-align: center;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #6b7280;
-    padding: 0.5rem;
+    padding: 0.25rem;
   }
 
   .days {
@@ -547,17 +545,18 @@ onMounted(() => {
   }
 
   .day {
-    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
-    font-size: 0.9375rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: #1f2937;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
+    padding: 0.375rem;
+    min-height: 28px;
 
     &.empty {
       cursor: default;
@@ -591,12 +590,6 @@ onMounted(() => {
 
     &.today.has-record::after {
       background: white;
-    }
-
-    .date-marker {
-      font-weight: 700;
-      margin-right: 2px;
-      opacity: 0.7;
     }
   }
 }

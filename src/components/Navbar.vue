@@ -67,6 +67,11 @@ const categories = [
     name: '기타',
     icon: '🗂️',
     path: '/others'
+  },
+  {
+    name: '제작 사이트',
+    icon: '🚀',
+    path: '/production-sites'
   }
 ]
 

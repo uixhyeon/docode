@@ -3,15 +3,35 @@
     <div class="signup-container">
       <div class="signup-card">
         <div class="signup-header">
-          <h1>일회성 사용자 생성</h1>
-          <p>uixhyeon 계정을 생성합니다</p>
+          <h1>사용자 계정 생성</h1>
+          <p>필요한 계정을 생성하세요</p>
         </div>
 
-        <button @click="createUser" class="create-btn" :disabled="loading || created">
-          <span v-if="!loading && !created">사용자 생성</span>
-          <span v-else-if="loading">생성 중...</span>
-          <span v-else>생성 완료!</span>
-        </button>
+        <div class="users-list">
+          <div class="user-item">
+            <div class="user-info">
+              <p><strong>아이디:</strong> uixhyeon</p>
+              <p><strong>비밀번호:</strong> uixhyeon</p>
+            </div>
+            <button @click="createUserAccount('uixhyeon')" class="create-btn" :disabled="loading || createdUsers.includes('uixhyeon')">
+              <span v-if="!loading && !createdUsers.includes('uixhyeon')">생성</span>
+              <span v-else-if="loading && currentUser === 'uixhyeon'">생성 중...</span>
+              <span v-else>완료</span>
+            </button>
+          </div>
+
+          <div class="user-item">
+            <div class="user-info">
+              <p><strong>아이디:</strong> a</p>
+              <p><strong>비밀번호:</strong> aaaaaa</p>
+            </div>
+            <button @click="createUserAccount('a', 'aaaaaa')" class="create-btn" :disabled="loading || createdUsers.includes('a')">
+              <span v-if="!loading && !createdUsers.includes('a')">생성</span>
+              <span v-else-if="loading && currentUser === 'a'">생성 중...</span>
+              <span v-else>완료</span>
+            </button>
+          </div>
+        </div>
 
         <div v-if="errorMessage" class="error-message">
           {{ errorMessage }}
@@ -19,12 +39,6 @@
 
         <div v-if="successMessage" class="success-message">
           {{ successMessage }}
-        </div>
-
-        <div class="info-box">
-          <p><strong>아이디:</strong> uixhyeon</p>
-          <p><strong>비밀번호:</strong> uixhyeon</p>
-          <p><strong>이메일:</strong> uixhyeon@codearchive.com</p>
         </div>
 
         <router-link to="/login" class="login-link">
@@ -41,41 +55,45 @@ import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/firebase/config'
 
 const loading = ref(false)
-const created = ref(false)
+const createdUsers = ref([])
+const currentUser = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 
-const createUser = async () => {
+const createUserAccount = async (username, customPassword = null) => {
   errorMessage.value = ''
   successMessage.value = ''
   loading.value = true
+  currentUser.value = username
 
   try {
-    const email = 'uixhyeon@codearchive.com'
-    const password = 'uixhyeon'
+    const email = `${username}@codearchive.com`
+    const password = customPassword || username
 
     await createUserWithEmailAndPassword(auth, email, password)
 
-    created.value = true
-    successMessage.value = '사용자가 성공적으로 생성되었습니다! 이제 로그인할 수 있습니다.'
+    createdUsers.value.push(username)
+    successMessage.value = `${username} 계정이 성공적으로 생성되었습니다!`
   } catch (error) {
     console.error('Signup error:', error)
 
     switch (error.code) {
       case 'auth/email-already-in-use':
-        errorMessage.value = '이미 생성된 계정입니다. 로그인 페이지로 이동하세요.'
+        errorMessage.value = `${username} 계정은 이미 생성되어 있습니다.`
+        createdUsers.value.push(username)
         break
       case 'auth/invalid-email':
         errorMessage.value = '유효하지 않은 이메일입니다.'
         break
       case 'auth/weak-password':
-        errorMessage.value = '비밀번호가 너무 약합니다.'
+        errorMessage.value = '비밀번호는 최소 6자 이상이어야 합니다.'
         break
       default:
         errorMessage.value = '계정 생성에 실패했습니다.'
     }
   } finally {
     loading.value = false
+    currentUser.value = ''
   }
 }
 </script>
@@ -120,22 +138,53 @@ const createUser = async () => {
   }
 }
 
-.create-btn {
-  width: 100%;
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   padding: 1rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.user-info {
+  flex: 1;
+
+  p {
+    margin: 0.25rem 0;
+    font-size: 0.875rem;
+    color: #2d3748;
+
+    strong {
+      color: #1a202c;
+    }
+  }
+}
+
+.create-btn {
+  padding: 0.625rem 1.5rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  margin-bottom: 1.5rem;
+  white-space: nowrap;
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
   }
 
   &:disabled {
@@ -164,24 +213,6 @@ const createUser = async () => {
   font-size: 0.875rem;
   text-align: center;
   margin-bottom: 1rem;
-}
-
-.info-box {
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-
-  p {
-    margin: 0.5rem 0;
-    font-size: 0.9375rem;
-    color: #2d3748;
-
-    strong {
-      color: #1a202c;
-    }
-  }
 }
 
 .login-link {

@@ -98,6 +98,10 @@ import TipsReviewPage from '../views/others/tips/ReviewPage.vue'
 import WritePage from '../views/WritePage.vue'
 import ArticlePage from '../views/ArticlePage.vue'
 
+// 제작 사이트
+import ProductionSitesPage from '../views/ProductionSitesPage.vue'
+import CodeArchivePage from '../views/production-sites/CodeArchivePage.vue'
+
 const routes = [
   {
     path: '/signup',
@@ -517,6 +521,18 @@ const routes = [
     path: '/article',
     name: 'Article',
     component: ArticlePage
+  },
+
+  // 제작 사이트
+  {
+    path: '/production-sites',
+    name: 'ProductionSites',
+    component: ProductionSitesPage
+  },
+  {
+    path: '/production-sites/code-archive',
+    name: 'CodeArchive',
+    component: CodeArchivePage
   }
 ]
 

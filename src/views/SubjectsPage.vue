@@ -67,45 +67,27 @@
       </button>
     </div>
 
-    <!-- 제목 수정 모달 -->
-    <div v-if="editingCategory" class="modal-overlay" @click="cancelEdit">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>카테고리 수정</h3>
-          <button class="close-btn" @click="cancelEdit">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>아이콘</label>
-            <input
-              v-model="editForm.icon"
-              type="text"
-              placeholder="이모지를 입력하세요"
-              class="form-input"
-            />
-          </div>
-          <div class="form-group">
-            <label>이름</label>
-            <input
-              v-model="editForm.name"
-              type="text"
-              placeholder="카테고리 이름을 입력하세요"
-              class="form-input"
-            />
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-cancel" @click="cancelEdit">취소</button>
-          <button class="btn-delete" @click="deleteCategory" v-if="!editingCategory.isNew">삭제</button>
-          <button class="btn-save" @click="saveCategory">저장</button>
-        </div>
-      </div>
-    </div>
+    <!-- EditModal 사용 -->
+    <EditModal
+      v-model="showModal"
+      :title="editingCategory?.isNew ? '새 카테고리 추가' : '카테고리 수정'"
+      :fields="modalFields"
+      :initial-data="editForm"
+      :is-new="editingCategory?.isNew || false"
+      :validate="validateCategory"
+      @save="saveCategory"
+      @delete="confirmDelete"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import EditModal from '@/components/EditModal.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
+const showModal = ref(false)
 
 const expandedCategories = ref([])
 const editingCategory = ref(null)
@@ -183,6 +165,25 @@ const categories = ref([
   }
 ])
 
+const modalFields = [
+  {
+    name: 'icon',
+    label: '아이콘',
+    type: 'text',
+    placeholder: '이모지를 입력하세요',
+    required: true,
+    maxLength: 10
+  },
+  {
+    name: 'name',
+    label: '카테고리 이름',
+    type: 'text',
+    placeholder: '카테고리 이름을 입력하세요',
+    required: true,
+    maxLength: 50
+  }
+]
+
 const toggleCategory = (categoryId) => {
   const index = expandedCategories.value.indexOf(categoryId)
   if (index > -1) {
@@ -190,6 +191,25 @@ const toggleCategory = (categoryId) => {
   } else {
     expandedCategories.value.push(categoryId)
   }
+}
+
+// 커스텀 검증: 중복 이름 체크
+const validateCategory = (formData) => {
+  const errors = {}
+
+  // 중복 이름 체크
+  const isDuplicate = categories.value.some(cat => {
+    if (editingCategory.value && !editingCategory.value.isNew && cat.id === editingCategory.value.id) {
+      return false
+    }
+    return cat.name.toLowerCase() === formData.name.trim().toLowerCase()
+  })
+
+  if (isDuplicate) {
+    errors.name = '이미 존재하는 카테고리 이름입니다.'
+  }
+
+  return errors
 }
 
 // 새 카테고리 추가
@@ -206,6 +226,7 @@ const addNewCategory = () => {
     name: '',
     icon: '📁'
   }
+  showModal.value = true
 }
 
 // 카테고리 수정 시작
@@ -215,53 +236,58 @@ const startEditCategory = (category) => {
     name: category.name,
     icon: category.icon
   }
+  showModal.value = true
 }
 
 // 카테고리 저장
-const saveCategory = () => {
-  if (!editForm.value.name.trim()) {
-    alert('이름을 입력해주세요.')
-    return
-  }
-
-  if (editingCategory.value.isNew) {
-    // 새 카테고리 추가
-    categories.value.push({
-      id: editingCategory.value.id,
-      name: editForm.value.name,
-      icon: editForm.value.icon,
-      items: []
-    })
-  } else {
-    // 기존 카테고리 수정
-    const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
-    if (index !== -1) {
-      categories.value[index].name = editForm.value.name
-      categories.value[index].icon = editForm.value.icon
+const saveCategory = async (formData) => {
+  try {
+    if (editingCategory.value.isNew) {
+      categories.value.push({
+        id: editingCategory.value.id,
+        name: formData.name.trim(),
+        icon: formData.icon.trim(),
+        items: []
+      })
+      toast.success('카테고리가 추가되었습니다.')
+    } else {
+      const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
+      if (index !== -1) {
+        categories.value[index].name = formData.name.trim()
+        categories.value[index].icon = formData.icon.trim()
+      }
+      toast.success('카테고리가 수정되었습니다.')
     }
-  }
 
-  cancelEdit()
+    showModal.value = false
+    editingCategory.value = null
+    editForm.value = { name: '', icon: '' }
+  } catch (error) {
+    toast.error('저장 중 오류가 발생했습니다.')
+  }
+}
+
+// 카테고리 삭제 확인
+const confirmDelete = () => {
+  if (confirm('이 카테고리를 삭제하시겠습니까?')) {
+    deleteCategory()
+  }
 }
 
 // 카테고리 삭제
-const deleteCategory = () => {
-  if (!confirm('이 카테고리를 삭제하시겠습니까?')) return
+const deleteCategory = async () => {
+  try {
+    const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
+    if (index !== -1) {
+      categories.value.splice(index, 1)
+      toast.success('카테고리가 삭제되었습니다.')
+    }
 
-  const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
-  if (index !== -1) {
-    categories.value.splice(index, 1)
-  }
-
-  cancelEdit()
-}
-
-// 편집 취소
-const cancelEdit = () => {
-  editingCategory.value = null
-  editForm.value = {
-    name: '',
-    icon: ''
+    showModal.value = false
+    editingCategory.value = null
+    editForm.value = { name: '', icon: '' }
+  } catch (error) {
+    toast.error('삭제 중 오류가 발생했습니다.')
   }
 }
 </script>
@@ -482,158 +508,6 @@ const cancelEdit = () => {
 
   svg {
     flex-shrink: 0;
-  }
-}
-
-// 모달 스타일
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
-  }
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s;
-
-  &:hover {
-    background: #f3f4f6;
-    color: #1f2937;
-  }
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #6b7280;
-  }
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.9375rem;
-  font-family: inherit;
-  background: white;
-  color: #1f2937;
-  transition: all 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: #087ea4;
-    box-shadow: 0 0 0 3px rgba(8, 126, 164, 0.1);
-  }
-
-  &::placeholder {
-    color: #9ca3af;
-  }
-}
-
-.modal-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-.btn-cancel,
-.btn-delete,
-.btn-save {
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-cancel {
-  background: #f3f4f6;
-  color: #6b7280;
-
-  &:hover {
-    background: #e5e7eb;
-  }
-}
-
-.btn-delete {
-  background: #fee;
-  color: #d73a49;
-  margin-right: auto;
-
-  &:hover {
-    background: #fdd;
-  }
-}
-
-.btn-save {
-  background: #087ea4;
-  color: white;
-
-  &:hover {
-    background: #0c5f7a;
-    box-shadow: 0 4px 8px rgba(8, 126, 164, 0.3);
   }
 }
 </style>

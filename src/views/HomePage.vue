@@ -24,11 +24,11 @@
 
     <div class="stats">
       <div class="stat-item">
-        <div class="stat-number">4</div>
+        <div class="stat-number">5</div>
         <div class="stat-label">대분류</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">24+</div>
+        <div class="stat-number">25+</div>
         <div class="stat-label">중분류</div>
       </div>
       <div class="stat-item">
@@ -68,6 +68,13 @@ const categories = [
     path: '/others',
     description: 'Git, 배포, 개발 도구, 패키지 매니저 등',
     count: 15
+  },
+  {
+    name: '🚀 제작 사이트',
+    icon: '🚀',
+    path: '/production-sites',
+    description: '직접 제작한 프로젝트의 개발 과정과 코드 설명',
+    count: 1
   }
 ]
 </script>

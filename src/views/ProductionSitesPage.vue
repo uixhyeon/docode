@@ -100,9 +100,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useToast } from '../composables/useToast'
-import { useLocalStorage } from '../composables/useLocalStorage'
+import { auth } from '../firebase/config'
+import {
+  getProductionSites,
+  saveProductionSite,
+  updateProductionSite,
+  deleteProductionSite
+} from '../firebase/firestore'
 
 const { success, error, warning } = useToast()
 
@@ -115,21 +121,25 @@ const editForm = ref({
 })
 
 const isLoading = ref(false)
-
-const DEFAULT_PROJECTS = [
-  {
-    id: 'code-archive',
-    name: '코드 아카이브',
-    icon: '📦',
-    description: '이 프로젝트의 제작 과정과 주요 기능 설명',
-    path: '/production-sites/code-archive'
-  }
-]
-
 const projects = ref([])
 
-// localStorage에서 데이터 로드/저장
-useLocalStorage(projects, 'production-sites-projects', DEFAULT_PROJECTS)
+// Firebase에서 프로젝트 목록 로드
+const loadProjects = async () => {
+  try {
+    const user = auth.currentUser
+    if (!user) return
+
+    const sites = await getProductionSites(user.uid)
+    projects.value = sites
+  } catch (err) {
+    console.error('Load error:', err)
+    error('프로젝트 목록을 불러오는데 실패했습니다.')
+  }
+}
+
+onMounted(() => {
+  loadProjects()
+})
 
 // 새 프로젝트 추가
 const addNewProject = () => {
@@ -162,9 +172,15 @@ const startEditProject = (project) => {
 }
 
 // 프로젝트 저장
-const saveProject = () => {
+const saveProject = async () => {
   try {
     isLoading.value = true
+
+    const user = auth.currentUser
+    if (!user) {
+      warning('로그인이 필요합니다.')
+      return
+    }
 
     // 검증
     if (!editForm.value.name.trim()) {
@@ -187,22 +203,37 @@ const saveProject = () => {
       return
     }
 
+    const siteData = {
+      name: editForm.value.name.trim(),
+      icon: editForm.value.icon.trim() || '📁',
+      description: editForm.value.description.trim(),
+      path: editForm.value.path.trim(),
+      sections: []
+    }
+
     if (editingProject.value.isNew) {
+      // 새 프로젝트 저장
+      const siteId = await saveProductionSite(user.uid, {
+        ...siteData,
+        id: editingProject.value.id
+      })
+
       projects.value.push({
-        id: editingProject.value.id,
-        name: editForm.value.name.trim(),
-        icon: editForm.value.icon.trim() || '📁',
-        description: editForm.value.description.trim(),
-        path: editForm.value.path.trim()
+        id: siteId,
+        ...siteData,
+        createdAt: new Date().toISOString()
       })
       success('프로젝트가 추가되었습니다.')
     } else {
+      // 기존 프로젝트 수정
+      await updateProductionSite(user.uid, editingProject.value.id, siteData)
+
       const index = projects.value.findIndex(p => p.id === editingProject.value.id)
       if (index !== -1) {
-        projects.value[index].name = editForm.value.name.trim()
-        projects.value[index].icon = editForm.value.icon.trim() || projects.value[index].icon
-        projects.value[index].description = editForm.value.description.trim()
-        projects.value[index].path = editForm.value.path.trim()
+        projects.value[index] = {
+          ...projects.value[index],
+          ...siteData
+        }
       }
       success('프로젝트가 수정되었습니다.')
     }
@@ -217,13 +248,24 @@ const saveProject = () => {
 }
 
 // 프로젝트 삭제
-const deleteProject = () => {
+const deleteProject = async () => {
   try {
     isLoading.value = true
+
+    const user = auth.currentUser
+    if (!user) {
+      warning('로그인이 필요합니다.')
+      return
+    }
 
     const index = projects.value.findIndex(p => p.id === editingProject.value.id)
     if (index !== -1) {
       const projectName = projects.value[index].name
+
+      // Firebase에서 삭제
+      await deleteProductionSite(user.uid, editingProject.value.id)
+
+      // 로컬 상태 업데이트
       projects.value.splice(index, 1)
       success(`"${projectName}" 프로젝트가 삭제되었습니다.`)
     }

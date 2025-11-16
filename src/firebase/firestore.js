@@ -142,3 +142,84 @@ export const saveCategories = async (userId, pageId, categories) => {
     throw error
   }
 }
+
+// ============ Production Sites CRUD ============
+
+// 모든 제작 사이트 가져오기
+export const getProductionSites = async (userId) => {
+  try {
+    const sitesRef = collection(db, `users/${userId}/production-sites`)
+    const q = query(sitesRef, orderBy('createdAt', 'desc'))
+    const querySnapshot = await getDocs(q)
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  } catch (error) {
+    console.error('Error getting production sites:', error)
+    return []
+  }
+}
+
+// 특정 제작 사이트 가져오기
+export const getProductionSite = async (userId, siteId) => {
+  try {
+    const siteRef = doc(db, `users/${userId}/production-sites/${siteId}`)
+    const siteDoc = await getDoc(siteRef)
+
+    if (siteDoc.exists()) {
+      return { id: siteDoc.id, ...siteDoc.data() }
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error('Error getting production site:', error)
+    return null
+  }
+}
+
+// 제작 사이트 저장 (생성)
+export const saveProductionSite = async (userId, siteData) => {
+  try {
+    const siteId = siteData.id || `site-${Date.now()}`
+    const siteRef = doc(db, `users/${userId}/production-sites/${siteId}`)
+
+    await setDoc(siteRef, {
+      ...siteData,
+      id: siteId,
+      createdAt: siteData.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    })
+
+    return siteId
+  } catch (error) {
+    console.error('Error saving production site:', error)
+    throw error
+  }
+}
+
+// 제작 사이트 업데이트
+export const updateProductionSite = async (userId, siteId, siteData) => {
+  try {
+    const siteRef = doc(db, `users/${userId}/production-sites/${siteId}`)
+
+    await updateDoc(siteRef, {
+      ...siteData,
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error updating production site:', error)
+    throw error
+  }
+}
+
+// 제작 사이트 삭제
+export const deleteProductionSite = async (userId, siteId) => {
+  try {
+    const siteRef = doc(db, `users/${userId}/production-sites/${siteId}`)
+    await deleteDoc(siteRef)
+    return true
+  } catch (error) {
+    console.error('Error deleting production site:', error)
+    throw error
+  }
+}

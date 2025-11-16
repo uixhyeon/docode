@@ -17,7 +17,13 @@
     ></div>
 
     <WelcomeModal />
-    <Toast />
+
+    <!-- Toast 알림 -->
+    <Toast
+      :isVisible="toastState.isVisible"
+      :message="toastState.message"
+      :type="toastState.type"
+    />
   </div>
 </template>
 
@@ -27,8 +33,10 @@ import MDNHeader from './components/MDNHeader.vue'
 import MDNSidebar from './components/MDNSidebar.vue'
 import WelcomeModal from './components/WelcomeModal.vue'
 import Toast from './components/Toast.vue'
+import { useToast } from './composables/useToast'
 
 const isSidebarOpen = ref(false)
+const { toastState } = useToast()
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value

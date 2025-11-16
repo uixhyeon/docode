@@ -108,3 +108,37 @@ export const getAllUserArticles = async (userId) => {
     return []
   }
 }
+
+// 카테고리 데이터 가져오기
+export const getCategories = async (userId, pageId) => {
+  try {
+    const categoriesRef = doc(db, `users/${userId}/page-data/${pageId}`)
+    const categoriesDoc = await getDoc(categoriesRef)
+
+    if (categoriesDoc.exists()) {
+      return categoriesDoc.data().categories || []
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error('Error getting categories:', error)
+    return null
+  }
+}
+
+// 카테고리 데이터 저장
+export const saveCategories = async (userId, pageId, categories) => {
+  try {
+    const categoriesRef = doc(db, `users/${userId}/page-data/${pageId}`)
+
+    await setDoc(categoriesRef, {
+      categories,
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error saving categories:', error)
+    throw error
+  }
+}

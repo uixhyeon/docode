@@ -1,48 +1,39 @@
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 
-// 전역 상태
-export const toastState = reactive({
-  toasts: ref([])
+const toastState = ref({
+  isVisible: false,
+  message: '',
+  type: 'info'
 })
 
-let toastId = 0
+let timeoutId = null
 
 export function useToast() {
-  const addToast = (message, type = 'info', duration = 3000) => {
-    const id = ++toastId
-    const toast = {
-      id,
+  const show = (message, type = 'info', duration = 3000) => {
+    // 기존 타이머 클리어
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+
+    toastState.value = {
+      isVisible: true,
       message,
-      type // 'success', 'error', 'warning', 'info'
+      type
     }
 
-    toastState.toasts.value.push(toast)
-
-    // 자동 제거
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id)
-      }, duration)
-    }
-
-    return id
+    timeoutId = setTimeout(() => {
+      toastState.value.isVisible = false
+    }, duration)
   }
 
-  const removeToast = (id) => {
-    const index = toastState.toasts.value.findIndex(t => t.id === id)
-    if (index !== -1) {
-      toastState.toasts.value.splice(index, 1)
-    }
-  }
-
-  const success = (message, duration) => addToast(message, 'success', duration)
-  const error = (message, duration) => addToast(message, 'error', duration)
-  const warning = (message, duration) => addToast(message, 'warning', duration)
-  const info = (message, duration) => addToast(message, 'info', duration)
+  const success = (message, duration) => show(message, 'success', duration)
+  const error = (message, duration) => show(message, 'error', duration)
+  const warning = (message, duration) => show(message, 'warning', duration)
+  const info = (message, duration) => show(message, 'info', duration)
 
   return {
-    addToast,
-    removeToast,
+    toastState,
+    show,
     success,
     error,
     warning,

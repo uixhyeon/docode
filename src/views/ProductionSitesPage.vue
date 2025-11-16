@@ -101,6 +101,10 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useToast } from '../composables/useToast'
+import { useLocalStorage } from '../composables/useLocalStorage'
+
+const { success, error, warning } = useToast()
 
 const editingProject = ref(null)
 const editForm = ref({
@@ -110,7 +114,9 @@ const editForm = ref({
   path: ''
 })
 
-const projects = ref([
+const isLoading = ref(false)
+
+const DEFAULT_PROJECTS = [
   {
     id: 'code-archive',
     name: '코드 아카이브',
@@ -118,7 +124,12 @@ const projects = ref([
     description: '이 프로젝트의 제작 과정과 주요 기능 설명',
     path: '/production-sites/code-archive'
   }
-])
+]
+
+const projects = ref([])
+
+// localStorage에서 데이터 로드/저장
+useLocalStorage(projects, 'production-sites-projects', DEFAULT_PROJECTS)
 
 // 새 프로젝트 추가
 const addNewProject = () => {
@@ -152,42 +163,78 @@ const startEditProject = (project) => {
 
 // 프로젝트 저장
 const saveProject = () => {
-  if (!editForm.value.name.trim()) {
-    alert('프로젝트 이름을 입력해주세요.')
-    return
-  }
+  try {
+    isLoading.value = true
 
-  if (editingProject.value.isNew) {
-    projects.value.push({
-      id: editingProject.value.id,
-      name: editForm.value.name,
-      icon: editForm.value.icon,
-      description: editForm.value.description,
-      path: editForm.value.path
-    })
-  } else {
-    const index = projects.value.findIndex(p => p.id === editingProject.value.id)
-    if (index !== -1) {
-      projects.value[index].name = editForm.value.name
-      projects.value[index].icon = editForm.value.icon
-      projects.value[index].description = editForm.value.description
-      projects.value[index].path = editForm.value.path
+    // 검증
+    if (!editForm.value.name.trim()) {
+      warning('프로젝트 이름을 입력해주세요.')
+      return
     }
-  }
 
-  cancelEdit()
+    if (editForm.value.name.trim().length > 50) {
+      warning('프로젝트 이름은 50자를 초과할 수 없습니다.')
+      return
+    }
+
+    // 중복 체크
+    const isDuplicate = projects.value.some(
+      p => p.id !== editingProject.value?.id && p.name.toLowerCase() === editForm.value.name.trim().toLowerCase()
+    )
+
+    if (isDuplicate) {
+      warning('이미 존재하는 프로젝트 이름입니다.')
+      return
+    }
+
+    if (editingProject.value.isNew) {
+      projects.value.push({
+        id: editingProject.value.id,
+        name: editForm.value.name.trim(),
+        icon: editForm.value.icon.trim() || '📁',
+        description: editForm.value.description.trim(),
+        path: editForm.value.path.trim()
+      })
+      success('프로젝트가 추가되었습니다.')
+    } else {
+      const index = projects.value.findIndex(p => p.id === editingProject.value.id)
+      if (index !== -1) {
+        projects.value[index].name = editForm.value.name.trim()
+        projects.value[index].icon = editForm.value.icon.trim() || projects.value[index].icon
+        projects.value[index].description = editForm.value.description.trim()
+        projects.value[index].path = editForm.value.path.trim()
+      }
+      success('프로젝트가 수정되었습니다.')
+    }
+
+    cancelEdit()
+  } catch (err) {
+    console.error('Save error:', err)
+    error('저장 중 오류가 발생했습니다.')
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // 프로젝트 삭제
 const deleteProject = () => {
-  if (!confirm('이 프로젝트를 삭제하시겠습니까?')) return
+  try {
+    isLoading.value = true
 
-  const index = projects.value.findIndex(p => p.id === editingProject.value.id)
-  if (index !== -1) {
-    projects.value.splice(index, 1)
+    const index = projects.value.findIndex(p => p.id === editingProject.value.id)
+    if (index !== -1) {
+      const projectName = projects.value[index].name
+      projects.value.splice(index, 1)
+      success(`"${projectName}" 프로젝트가 삭제되었습니다.`)
+    }
+
+    cancelEdit()
+  } catch (err) {
+    console.error('Delete error:', err)
+    error('삭제 중 오류가 발생했습니다.')
+  } finally {
+    isLoading.value = false
   }
-
-  cancelEdit()
 }
 
 // 편집 취소

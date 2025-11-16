@@ -67,27 +67,28 @@
       </button>
     </div>
 
-    <!-- EditModal 사용 -->
+    <!-- EditModal 컴포넌트 -->
     <EditModal
-      v-model="showModal"
+      :isOpen="!!editingCategory"
       :title="editingCategory?.isNew ? '새 카테고리 추가' : '카테고리 수정'"
-      :fields="modalFields"
-      :initial-data="editForm"
-      :is-new="editingCategory?.isNew || false"
-      :validate="validateCategory"
+      :iconValue="editForm.icon"
+      :nameValue="editForm.name"
+      :showDelete="!editingCategory?.isNew"
+      :loading="isLoading"
+      @close="cancelEdit"
       @save="saveCategory"
-      @delete="confirmDelete"
+      @delete="deleteCategory"
     />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import EditModal from '@/components/EditModal.vue'
-import { useToast } from '@/composables/useToast'
+import EditModal from '../components/EditModal.vue'
+import { useToast } from '../composables/useToast'
+import { useLocalStorage } from '../composables/useLocalStorage'
 
-const toast = useToast()
-const showModal = ref(false)
+const { success, error, warning } = useToast()
 
 const expandedCategories = ref([])
 const editingCategory = ref(null)
@@ -95,8 +96,9 @@ const editForm = ref({
   name: '',
   icon: ''
 })
+const isLoading = ref(false)
 
-const categories = ref([
+const DEFAULT_CATEGORIES = [
   {
     id: 'html-css',
     name: 'HTML/CSS',
@@ -163,26 +165,12 @@ const categories = ref([
       'Storage'
     ]
   }
-])
-
-const modalFields = [
-  {
-    name: 'icon',
-    label: '아이콘',
-    type: 'text',
-    placeholder: '이모지를 입력하세요',
-    required: true,
-    maxLength: 10
-  },
-  {
-    name: 'name',
-    label: '카테고리 이름',
-    type: 'text',
-    placeholder: '카테고리 이름을 입력하세요',
-    required: true,
-    maxLength: 50
-  }
 ]
+
+const categories = ref([])
+
+// localStorage에서 데이터 로드/저장
+useLocalStorage(categories, 'subjects-categories', DEFAULT_CATEGORIES)
 
 const toggleCategory = (categoryId) => {
   const index = expandedCategories.value.indexOf(categoryId)
@@ -191,25 +179,6 @@ const toggleCategory = (categoryId) => {
   } else {
     expandedCategories.value.push(categoryId)
   }
-}
-
-// 커스텀 검증: 중복 이름 체크
-const validateCategory = (formData) => {
-  const errors = {}
-
-  // 중복 이름 체크
-  const isDuplicate = categories.value.some(cat => {
-    if (editingCategory.value && !editingCategory.value.isNew && cat.id === editingCategory.value.id) {
-      return false
-    }
-    return cat.name.toLowerCase() === formData.name.trim().toLowerCase()
-  })
-
-  if (isDuplicate) {
-    errors.name = '이미 존재하는 카테고리 이름입니다.'
-  }
-
-  return errors
 }
 
 // 새 카테고리 추가
@@ -226,7 +195,6 @@ const addNewCategory = () => {
     name: '',
     icon: '📁'
   }
-  showModal.value = true
 }
 
 // 카테고리 수정 시작
@@ -236,58 +204,89 @@ const startEditCategory = (category) => {
     name: category.name,
     icon: category.icon
   }
-  showModal.value = true
 }
 
 // 카테고리 저장
-const saveCategory = async (formData) => {
+const saveCategory = (data) => {
   try {
-    if (editingCategory.value.isNew) {
-      categories.value.push({
-        id: editingCategory.value.id,
-        name: formData.name.trim(),
-        icon: formData.icon.trim(),
-        items: []
-      })
-      toast.success('카테고리가 추가되었습니다.')
-    } else {
-      const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
-      if (index !== -1) {
-        categories.value[index].name = formData.name.trim()
-        categories.value[index].icon = formData.icon.trim()
-      }
-      toast.success('카테고리가 수정되었습니다.')
+    isLoading.value = true
+
+    // 검증
+    if (!data.name.trim()) {
+      warning('이름을 입력해주세요.')
+      return
     }
 
-    showModal.value = false
-    editingCategory.value = null
-    editForm.value = { name: '', icon: '' }
-  } catch (error) {
-    toast.error('저장 중 오류가 발생했습니다.')
-  }
-}
+    if (data.name.trim().length > 50) {
+      warning('이름은 50자를 초과할 수 없습니다.')
+      return
+    }
 
-// 카테고리 삭제 확인
-const confirmDelete = () => {
-  if (confirm('이 카테고리를 삭제하시겠습니까?')) {
-    deleteCategory()
+    // 중복 체크
+    const isDuplicate = categories.value.some(
+      c => c.id !== editingCategory.value?.id && c.name.toLowerCase() === data.name.trim().toLowerCase()
+    )
+
+    if (isDuplicate) {
+      warning('이미 존재하는 카테고리 이름입니다.')
+      return
+    }
+
+    if (editingCategory.value.isNew) {
+      // 새 카테고리 추가
+      categories.value.push({
+        id: editingCategory.value.id,
+        name: data.name.trim(),
+        icon: data.icon.trim() || '📁',
+        items: []
+      })
+      success('카테고리가 추가되었습니다.')
+    } else {
+      // 기존 카테고리 수정
+      const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
+      if (index !== -1) {
+        categories.value[index].name = data.name.trim()
+        categories.value[index].icon = data.icon.trim() || categories.value[index].icon
+      }
+      success('카테고리가 수정되었습니다.')
+    }
+
+    cancelEdit()
+  } catch (err) {
+    console.error('Save error:', err)
+    error('저장 중 오류가 발생했습니다.')
+  } finally {
+    isLoading.value = false
   }
 }
 
 // 카테고리 삭제
-const deleteCategory = async () => {
+const deleteCategory = () => {
   try {
+    isLoading.value = true
+
     const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
     if (index !== -1) {
+      const categoryName = categories.value[index].name
       categories.value.splice(index, 1)
-      toast.success('카테고리가 삭제되었습니다.')
+      success(`"${categoryName}" 카테고리가 삭제되었습니다.`)
     }
 
-    showModal.value = false
-    editingCategory.value = null
-    editForm.value = { name: '', icon: '' }
-  } catch (error) {
-    toast.error('삭제 중 오류가 발생했습니다.')
+    cancelEdit()
+  } catch (err) {
+    console.error('Delete error:', err)
+    error('삭제 중 오류가 발생했습니다.')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 편집 취소
+const cancelEdit = () => {
+  editingCategory.value = null
+  editForm.value = {
+    name: '',
+    icon: ''
   }
 }
 </script>

@@ -77,11 +77,11 @@ const closeSidebar = () => {
   }
 
   @media (max-width: 768px) {
-    padding: 1.5rem 1.25rem;
+    padding: 1.5rem 1rem;
   }
 
   @media (max-width: 480px) {
-    padding: 1.25rem 1rem;
+    padding: 1.25rem 0.75rem;
   }
 }
 

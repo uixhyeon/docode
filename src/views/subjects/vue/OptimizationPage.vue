@@ -49,9 +49,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import TabNavigation from '../../../components/TabNavigation.vue'
+import { useArticles } from '../../../composables/useArticles'
 
 const router = useRouter()
 
@@ -95,18 +95,7 @@ const topics = [
   }
 ]
 
-const articles = ref([])
-
-onMounted(() => {
-  const savedArticles = localStorage.getItem('articles_vue_optimization')
-  if (savedArticles) {
-    articles.value = JSON.parse(savedArticles)
-  }
-})
-
-const getArticles = (topicId) => {
-  return articles.value.filter(article => article.topicId === topicId)
-}
+const { getArticles } = useArticles('vue', 'optimization')
 
 const goToWrite = (topicId, topicTitle) => {
   router.push({

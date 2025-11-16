@@ -50,11 +50,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import TabNavigation from '../../../components/TabNavigation.vue'
+import { useArticles } from '../../../composables/useArticles'
 
 const router = useRouter()
+const { getArticles } = useArticles('javascript', 'patterns')
 
 const tabs = [
   { name: 'ES6+', path: '/subjects/javascript/es6', icon: '🆕' },
@@ -95,21 +96,6 @@ const topics = [
     description: '믹신 패턴'
   }
 ]
-
-const articles = ref([])
-
-// localStorage에서 글 목록 불러오기
-onMounted(() => {
-  const savedArticles = localStorage.getItem('articles_javascript_patterns')
-  if (savedArticles) {
-    articles.value = JSON.parse(savedArticles)
-  }
-})
-
-// 특정 주제의 글 목록 가져오기
-const getArticles = (topicId) => {
-  return articles.value.filter(article => article.topicId === topicId)
-}
 
 // 글쓰기 페이지로 이동
 const goToWrite = (topicId, topicTitle) => {

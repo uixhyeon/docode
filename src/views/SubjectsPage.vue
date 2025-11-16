@@ -114,7 +114,7 @@ const editForm = ref({
   icon: ''
 })
 
-const categories = [
+const categories = ref([
   {
     id: 'html-css',
     name: 'HTML/CSS',
@@ -181,7 +181,7 @@ const categories = [
       'Storage'
     ]
   }
-]
+])
 
 const toggleCategory = (categoryId) => {
   const index = expandedCategories.value.indexOf(categoryId)
@@ -226,7 +226,7 @@ const saveCategory = () => {
 
   if (editingCategory.value.isNew) {
     // 새 카테고리 추가
-    categories.push({
+    categories.value.push({
       id: editingCategory.value.id,
       name: editForm.value.name,
       icon: editForm.value.icon,
@@ -234,10 +234,10 @@ const saveCategory = () => {
     })
   } else {
     // 기존 카테고리 수정
-    const index = categories.findIndex(c => c.id === editingCategory.value.id)
+    const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
     if (index !== -1) {
-      categories[index].name = editForm.value.name
-      categories[index].icon = editForm.value.icon
+      categories.value[index].name = editForm.value.name
+      categories.value[index].icon = editForm.value.icon
     }
   }
 
@@ -248,9 +248,9 @@ const saveCategory = () => {
 const deleteCategory = () => {
   if (!confirm('이 카테고리를 삭제하시겠습니까?')) return
 
-  const index = categories.findIndex(c => c.id === editingCategory.value.id)
+  const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
   if (index !== -1) {
-    categories.splice(index, 1)
+    categories.value.splice(index, 1)
   }
 
   cancelEdit()

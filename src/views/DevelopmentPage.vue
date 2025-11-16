@@ -114,7 +114,7 @@ const editForm = ref({
   icon: ''
 })
 
-const categories = [
+const categories = ref([
   {
     id: 'form',
     name: '폼 처리',
@@ -188,7 +188,7 @@ const categories = [
       '이미지 최적화'
     ]
   }
-]
+])
 
 const toggleCategory = (categoryId) => {
   const index = expandedCategories.value.indexOf(categoryId)
@@ -232,17 +232,17 @@ const saveCategory = () => {
   }
 
   if (editingCategory.value.isNew) {
-    categories.push({
+    categories.value.push({
       id: editingCategory.value.id,
       name: editForm.value.name,
       icon: editForm.value.icon,
       items: []
     })
   } else {
-    const index = categories.findIndex(c => c.id === editingCategory.value.id)
+    const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
     if (index !== -1) {
-      categories[index].name = editForm.value.name
-      categories[index].icon = editForm.value.icon
+      categories.value[index].name = editForm.value.name
+      categories.value[index].icon = editForm.value.icon
     }
   }
 
@@ -253,9 +253,9 @@ const saveCategory = () => {
 const deleteCategory = () => {
   if (!confirm('이 카테고리를 삭제하시겠습니까?')) return
 
-  const index = categories.findIndex(c => c.id === editingCategory.value.id)
+  const index = categories.value.findIndex(c => c.id === editingCategory.value.id)
   if (index !== -1) {
-    categories.splice(index, 1)
+    categories.value.splice(index, 1)
   }
 
   cancelEdit()

@@ -425,7 +425,8 @@ onMounted(() => {
   padding: 1.5rem;
   height: fit-content;
   position: sticky;
-  top: 80px;
+  top: calc(var(--header-height) + 1rem);
+  z-index: 50;
 }
 
 .calendar-header {

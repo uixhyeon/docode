@@ -108,6 +108,14 @@ const handleLogin = async () => {
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
 }
 
 .login-container {
@@ -120,6 +128,15 @@ const handleLogin = async () => {
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   padding: 3rem 2.5rem;
+
+  @media (max-width: 768px) {
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 2rem 1.5rem;
+  }
 }
 
 .login-header {
@@ -135,12 +152,34 @@ const handleLogin = async () => {
     font-weight: 700;
     color: #1a202c;
     margin: 0 0 0.5rem;
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.375rem;
+    }
   }
 
   p {
     color: #718096;
     font-size: 0.9375rem;
     margin: 0;
+
+    @media (max-width: 480px) {
+      font-size: 0.875rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    margin-bottom: 2rem;
+
+    svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 1.25rem;
+    }
   }
 }
 

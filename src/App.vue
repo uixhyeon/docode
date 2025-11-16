@@ -75,6 +75,14 @@ const closeSidebar = () => {
   @media (min-width: 769px) {
     padding: 2.5rem 2rem;
   }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1.25rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.25rem 1rem;
+  }
 }
 
 .sidebar-overlay {
@@ -86,6 +94,8 @@ const closeSidebar = () => {
   background: rgba(0, 0, 0, 0.5);
   z-index: 85;
   display: none;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 
   @media (max-width: 768px) {
     display: block;

@@ -474,6 +474,12 @@ const formatDate = (dateString) => {
   height: calc(100vh - 300px);
   min-height: 500px;
   position: relative;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    min-height: auto;
+  }
 }
 
 .left-panel {
@@ -483,6 +489,14 @@ const formatDate = (dateString) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    min-height: 50vh;
+    max-height: 60vh;
+  }
 }
 
 .right-panel {
@@ -491,6 +505,11 @@ const formatDate = (dateString) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    min-height: 50vh;
+  }
 }
 
 .panel-header {
@@ -505,6 +524,14 @@ const formatDate = (dateString) => {
     font-weight: 600;
     color: var(--color-text-primary);
     margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+
+    h3 {
+      font-size: 0.9375rem;
+    }
   }
 }
 
@@ -524,12 +551,20 @@ const formatDate = (dateString) => {
   overflow-y: auto;
   padding: 1rem;
   position: relative;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 }
 
 .document-content {
   font-family: 'Courier New', monospace;
   font-size: 0.875rem;
   line-height: 1.6;
+
+  @media (max-width: 768px) {
+    font-size: 0.8125rem;
+  }
 }
 
 .document-line {
@@ -540,6 +575,10 @@ const formatDate = (dateString) => {
   &.highlighted {
     background: rgba(255, 235, 59, 0.3);
     animation: highlight-pulse 1s ease;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.2rem 0.35rem;
   }
 }
 
@@ -555,11 +594,18 @@ const formatDate = (dateString) => {
   user-select: none;
   text-align: right;
   margin-right: 1rem;
+
+  @media (max-width: 768px) {
+    width: 30px;
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+  }
 }
 
 .line-content {
   flex: 1;
   color: var(--color-text-primary);
+  word-break: break-word;
 }
 
 .workspace {
@@ -568,6 +614,11 @@ const formatDate = (dateString) => {
   overflow-y: auto;
   position: relative;
   min-height: 400px;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    min-height: 300px;
+  }
 }
 
 .connection-lines {
@@ -596,6 +647,12 @@ const formatDate = (dateString) => {
   &:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   }
+
+  @media (max-width: 768px) {
+    left: 1rem;
+    right: 1rem;
+    padding: 0.875rem;
+  }
 }
 
 .card-header-info {
@@ -613,6 +670,10 @@ const formatDate = (dateString) => {
   .line-info {
     color: var(--color-accent);
     font-family: monospace;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.6875rem;
   }
 }
 
@@ -637,6 +698,10 @@ const formatDate = (dateString) => {
       background: transparent;
       padding: 0;
     }
+
+    @media (max-width: 768px) {
+      font-size: 0.8125rem;
+    }
   }
 
   p {
@@ -644,6 +709,10 @@ const formatDate = (dateString) => {
     font-size: 0.9375rem;
     line-height: 1.6;
     color: var(--color-text-primary);
+
+    @media (max-width: 768px) {
+      font-size: 0.875rem;
+    }
   }
 }
 
@@ -658,6 +727,11 @@ const formatDate = (dateString) => {
   p {
     margin: 0;
   }
+
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+    padding: 2rem 1rem;
+  }
 }
 
 .embed-section {
@@ -670,6 +744,14 @@ const formatDate = (dateString) => {
     font-weight: 600;
     color: var(--color-text-primary);
     margin-bottom: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem;
+
+    h2 {
+      font-size: 1.125rem;
+    }
   }
 }
 
@@ -684,6 +766,14 @@ const formatDate = (dateString) => {
     width: 100%;
     height: 100%;
   }
+
+  @media (max-width: 768px) {
+    height: 400px;
+  }
+
+  @media (max-width: 480px) {
+    height: 300px;
+  }
 }
 
 .article-footer {
@@ -693,6 +783,15 @@ const formatDate = (dateString) => {
   padding: 1.5rem 2rem;
   background: var(--color-bg-primary);
   border-top: 1px solid var(--color-border);
+
+  @media (max-width: 768px) {
+    padding: 1.25rem 1rem;
+    gap: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+  }
 }
 
 .delete-btn,
@@ -710,6 +809,16 @@ const formatDate = (dateString) => {
 
   svg {
     flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    justify-content: center;
   }
 }
 

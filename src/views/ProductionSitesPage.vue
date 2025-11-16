@@ -42,6 +42,11 @@
         </svg>
         <span>새 프로젝트 추가</span>
       </button>
+
+      <!-- 초기 데이터 추가 버튼 (임시) -->
+      <button v-if="projects.length === 0" class="init-data-btn" @click="addInitialProjects">
+        <span>초기 프로젝트 4개 추가 (텐바이텐, 클론코딩, 국중박, 마타주)</span>
+      </button>
     </div>
 
     <!-- 제목 수정 모달 -->
@@ -289,6 +294,91 @@ const cancelEdit = () => {
     path: ''
   }
 }
+
+// 초기 프로젝트 4개 추가
+const addInitialProjects = async () => {
+  try {
+    isLoading.value = true
+
+    const user = auth.currentUser
+    if (!user) {
+      warning('로그인이 필요합니다.')
+      return
+    }
+
+    const initialProjects = [
+      {
+        id: 'site-tenbyten',
+        name: '텐바이텐',
+        icon: '🛒',
+        description: '온라인 디자인 문구 쇼핑몰 클론 프로젝트',
+        path: '/production-sites/site-tenbyten',
+        sections: [
+          {
+            id: 'overview',
+            title: '프로젝트 개요',
+            content: '# 텐바이텐 클론 프로젝트\n\n텐바이텐 온라인 쇼핑몰을 클론 코딩한 프로젝트입니다.\n\n## 주요 기능\n- 상품 목록 및 상세 페이지\n- 장바구니 기능\n- 반응형 디자인'
+          }
+        ]
+      },
+      {
+        id: 'site-clonecoding',
+        name: '클론코딩',
+        icon: '💻',
+        description: '다양한 웹사이트 클론코딩 프로젝트 모음',
+        path: '/production-sites/site-clonecoding',
+        sections: [
+          {
+            id: 'overview',
+            title: '프로젝트 개요',
+            content: '# 클론코딩 프로젝트\n\n여러 웹사이트를 클론 코딩하며 학습한 프로젝트 모음입니다.\n\n## 주요 학습 내용\n- HTML/CSS 레이아웃\n- JavaScript 인터랙션\n- 반응형 웹 디자인'
+          }
+        ]
+      },
+      {
+        id: 'site-gukjungpark',
+        name: '국중박 리뉴얼',
+        icon: '🎭',
+        description: '국립중앙박물관 웹사이트 리뉴얼 프로젝트',
+        path: '/production-sites/site-gukjungpark',
+        sections: [
+          {
+            id: 'overview',
+            title: '프로젝트 개요',
+            content: '# 국립중앙박물관 리뉴얼\n\n국립중앙박물관 웹사이트를 현대적으로 리뉴얼한 프로젝트입니다.\n\n## 주요 개선 사항\n- 사용자 경험 개선\n- 모던한 디자인\n- 접근성 향상'
+          }
+        ]
+      },
+      {
+        id: 'site-mataju',
+        name: '마타주 짐배송',
+        icon: '📦',
+        description: '짐 배송 서비스 웹사이트 프로젝트',
+        path: '/production-sites/site-mataju',
+        sections: [
+          {
+            id: 'overview',
+            title: '프로젝트 개요',
+            content: '# 마타주 짐배송 서비스\n\n짐 배송 서비스를 제공하는 웹사이트 프로젝트입니다.\n\n## 주요 기능\n- 배송 신청 폼\n- 실시간 배송 조회\n- 고객 문의 시스템'
+          }
+        ]
+      }
+    ]
+
+    // 모든 프로젝트를 Firebase에 저장
+    for (const project of initialProjects) {
+      await saveProductionSite(user.uid, project)
+      projects.value.push(project)
+    }
+
+    success('초기 프로젝트 4개가 추가되었습니다!')
+  } catch (err) {
+    console.error('Add initial projects error:', err)
+    error('프로젝트 추가 중 오류가 발생했습니다.')
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -432,6 +522,34 @@ const cancelEdit = () => {
 
   svg {
     flex-shrink: 0;
+  }
+}
+
+.init-data-btn {
+  width: 100%;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #087ea4 0%, #0c5f7a 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(8, 126, 164, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(8, 126, 164, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 

@@ -444,29 +444,29 @@ const highlightSyntax = (code, language = 'javascript') => {
 
   const keywords = keywordsByLanguage[lang] || keywordsByLanguage.javascript
 
-  // 키워드 하이라이트
+  // 키워드 하이라이트 (GitHub 스타일 보라색)
   keywords.forEach(keyword => {
     const regex = new RegExp(`\\b${keyword}\\b`, 'g')
-    highlighted = highlighted.replace(regex, `<span style="color: #0000ff; font-weight: 600;">${keyword}</span>`)
+    highlighted = highlighted.replace(regex, `<span style="color: #c678dd; font-weight: 600;">${keyword}</span>`)
   })
 
-  // 문자열 하이라이트
-  highlighted = highlighted.replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g, '<span style="color: #a31515;">$&</span>')
+  // 문자열 하이라이트 (GitHub 스타일 녹색)
+  highlighted = highlighted.replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g, '<span style="color: #98c379;">$&</span>')
 
-  // 주석 하이라이트
+  // 주석 하이라이트 (GitHub 스타일 회색)
   if (lang === 'javascript' || lang === 'typescript' || lang === 'java' || lang === 'vue' || lang === 'react') {
-    highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span style="color: #008000; font-style: italic;">$1</span>')
-    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #008000; font-style: italic;">$1</span>')
+    highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span style="color: #5c6370; font-style: italic;">$1</span>')
+    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #5c6370; font-style: italic;">$1</span>')
   } else if (lang === 'python') {
-    highlighted = highlighted.replace(/(#.*$)/gm, '<span style="color: #008000; font-style: italic;">$1</span>')
+    highlighted = highlighted.replace(/(#.*$)/gm, '<span style="color: #5c6370; font-style: italic;">$1</span>')
   } else if (lang === 'css') {
-    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #008000; font-style: italic;">$1</span>')
+    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #5c6370; font-style: italic;">$1</span>')
   } else if (lang === 'html') {
-    highlighted = highlighted.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span style="color: #008000; font-style: italic;">$1</span>')
+    highlighted = highlighted.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span style="color: #5c6370; font-style: italic;">$1</span>')
   }
 
-  // 숫자 하이라이트
-  highlighted = highlighted.replace(/\b(\d+)\b/g, '<span style="color: #098658;">$1</span>')
+  // 숫자 하이라이트 (GitHub 스타일 주황색)
+  highlighted = highlighted.replace(/\b(\d+)\b/g, '<span style="color: #d19a66;">$1</span>')
 
   return highlighted
 }
@@ -715,8 +715,8 @@ onMounted(async () => {
 }
 
 .left-panel {
-  background: var(--color-bg-primary);
-  border-right: 1px solid var(--color-border);
+  background: #0d1117;
+  border-right: 1px solid #30363d;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -827,28 +827,28 @@ onMounted(async () => {
   transition: background 0.1s;
 
   &:hover {
-    background: var(--color-bg-tertiary);
+    background: #161b22;
   }
 
   &.selected {
-    background: rgba(0, 96, 223, 0.1);
+    background: rgba(56, 139, 253, 0.15);
   }
 
   &.highlighted {
-    background: rgba(255, 235, 59, 0.3);
+    background: rgba(187, 128, 9, 0.3);
     animation: highlight-pulse 1s ease;
   }
 }
 
 @keyframes highlight-pulse {
-  0%, 100% { background: rgba(255, 235, 59, 0.3); }
-  50% { background: rgba(255, 235, 59, 0.6); }
+  0%, 100% { background: rgba(187, 128, 9, 0.3); }
+  50% { background: rgba(187, 128, 9, 0.5); }
 }
 
 .line-number {
   display: inline-block;
   width: 40px;
-  color: var(--color-text-tertiary);
+  color: #6e7681;
   user-select: none;
   text-align: right;
   margin-right: 1rem;
@@ -856,7 +856,8 @@ onMounted(async () => {
 
 .line-content {
   flex: 1;
-  color: var(--color-text-primary);
+  color: #c9d1d9;
+  font-family: 'Courier New', Consolas, 'Monaco', monospace;
 }
 
 .extract-button {

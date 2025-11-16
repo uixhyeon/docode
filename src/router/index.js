@@ -100,6 +100,7 @@ import ArticlePage from '../views/ArticlePage.vue'
 
 // 제작 사이트
 import ProductionSitesPage from '../views/ProductionSitesPage.vue'
+import ProjectDetailPage from '../views/production-sites/ProjectDetailPage.vue'
 import CodeArchivePage from '../views/production-sites/CodeArchivePage.vue'
 
 const routes = [
@@ -528,6 +529,11 @@ const routes = [
     path: '/production-sites',
     name: 'ProductionSites',
     component: ProductionSitesPage
+  },
+  {
+    path: '/production-sites/:id',
+    name: 'ProjectDetail',
+    component: ProjectDetailPage
   },
   {
     path: '/production-sites/code-archive',

@@ -57,14 +57,15 @@
               </div>
             </div>
 
-          <!-- 새 컨텐츠 추가 버튼 -->
-          <button class="add-content-btn" @click="addNewTopic">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            <span>새 컨텐츠 추가</span>
-          </button>
           </div>
+
+        <!-- 새 컨텐츠 추가 버튼 -->
+        <button class="add-content-btn" @click="addNewTopic">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span>새 컨텐츠 추가</span>
+        </button>
         </div>
       </section>
     </div>

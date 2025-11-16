@@ -86,6 +86,7 @@
 import { ref } from 'vue'
 import EditModal from '../components/EditModal.vue'
 import { useToast } from '../composables/useToast'
+import { useLocalStorage } from '../composables/useLocalStorage'
 
 const { success, error, warning } = useToast()
 
@@ -97,7 +98,7 @@ const editForm = ref({
 })
 const isLoading = ref(false)
 
-const categories = ref([
+const DEFAULT_CATEGORIES = [
   {
     id: 'interaction',
     name: '인터랙션',
@@ -143,7 +144,12 @@ const categories = ref([
       '원 그래프'
     ]
   }
-])
+]
+
+const categories = ref([])
+
+// localStorage에서 데이터 로드/저장
+useLocalStorage(categories, 'ui-features-categories', DEFAULT_CATEGORIES)
 
 const toggleCategory = (categoryId) => {
   const index = expandedCategories.value.indexOf(categoryId)

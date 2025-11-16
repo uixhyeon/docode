@@ -102,6 +102,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useToast } from '../composables/useToast'
+import { useLocalStorage } from '../composables/useLocalStorage'
 
 const { success, error, warning } = useToast()
 
@@ -115,7 +116,7 @@ const editForm = ref({
 
 const isLoading = ref(false)
 
-const projects = ref([
+const DEFAULT_PROJECTS = [
   {
     id: 'code-archive',
     name: '코드 아카이브',
@@ -123,7 +124,12 @@ const projects = ref([
     description: '이 프로젝트의 제작 과정과 주요 기능 설명',
     path: '/production-sites/code-archive'
   }
-])
+]
+
+const projects = ref([])
+
+// localStorage에서 데이터 로드/저장
+useLocalStorage(projects, 'production-sites-projects', DEFAULT_PROJECTS)
 
 // 새 프로젝트 추가
 const addNewProject = () => {

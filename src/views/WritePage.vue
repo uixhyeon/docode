@@ -520,7 +520,9 @@ const saveArticle = async () => {
       alert('저장되었습니다!')
     }
 
-    router.back()
+    // 이전 페이지로 명시적 라우팅 (페이지 리로드를 통해 새 글 목록 표시)
+    const previousPath = `/${route.query.category}/${route.query.subcategory}/${route.query.page}`
+    router.push(previousPath)
   } catch (error) {
     console.error('저장 실패 - 에러 상세:', error)
     console.error('에러 메시지:', error.message)

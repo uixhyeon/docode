@@ -191,9 +191,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { auth } from '@/firebase/config'
 import { saveArticle as saveToFirestore, updateArticle, getArticle } from '@/firebase/firestore'
+import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
 const route = useRoute()
+const { success, error } = useToast()
 
 // 페이지 정보
 const topicTitle = ref(route.query.topicTitle || '')
@@ -476,7 +478,7 @@ const saveArticle = async () => {
   console.log('=== 저장 시작 ===')
 
   if (!articleTitle.value.trim()) {
-    alert('글 제목을 입력해주세요.')
+    error('글 제목을 입력해주세요.')
     return
   }
 
@@ -484,7 +486,7 @@ const saveArticle = async () => {
   console.log('현재 사용자:', user)
 
   if (!user) {
-    alert('로그인이 필요합니다.')
+    error('로그인이 필요합니다.')
     return
   }
 
@@ -511,23 +513,23 @@ const saveArticle = async () => {
       console.log('수정 모드 - 아티클 ID:', editingArticleId.value)
       await updateArticle(user.uid, editingArticleId.value, articleData)
       console.log('수정 완료!')
-      alert('수정되었습니다!')
+      success('수정되었습니다!')
     } else {
       // 새 글 작성
       console.log('새 글 작성 모드')
       const articleId = await saveToFirestore(user.uid, articleData)
       console.log('저장 완료! 생성된 ID:', articleId)
-      alert('저장되었습니다!')
+      success('저장되었습니다!')
     }
 
     // 이전 페이지로 명시적 라우팅 (페이지 리로드를 통해 새 글 목록 표시)
     const previousPath = `/${route.query.category}/${route.query.subcategory}/${route.query.page}`
     router.push(previousPath)
-  } catch (error) {
-    console.error('저장 실패 - 에러 상세:', error)
-    console.error('에러 메시지:', error.message)
-    console.error('에러 코드:', error.code)
-    alert(`저장에 실패했습니다.\n에러: ${error.message || error}`)
+  } catch (err) {
+    console.error('저장 실패 - 에러 상세:', err)
+    console.error('에러 메시지:', err.message)
+    console.error('에러 코드:', err.code)
+    error(`저장에 실패했습니다. ${err.message || err}`)
   }
 }
 
